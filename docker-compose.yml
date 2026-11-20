@@ -1,0 +1,15 @@
+services:
+  underthehood:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: underthehood:latest
+    container_name: underthehood-app
+    ports:
+      - '8080:80'
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:80/']
+      interval: 30s
+      timeout: 3s
+      retries: 3
