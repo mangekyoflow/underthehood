@@ -10,6 +10,8 @@ import clsx from 'clsx';
 
 interface RouteTrackViewProps {
   initialModuleId?: RouteModuleId;
+  initialStep?: number;
+  onStepChange?: (step: number) => void;
   progress: UserProgress;
   onChallengeComplete: (id: string) => void;
   onSelectModule?: (id: RouteModuleId) => void;
@@ -17,6 +19,8 @@ interface RouteTrackViewProps {
 
 export const RouteTrackView: React.FC<RouteTrackViewProps> = ({
   initialModuleId = 'url-lifecycle',
+  initialStep,
+  onStepChange,
   progress,
   onChallengeComplete,
   onSelectModule,
@@ -83,7 +87,7 @@ export const RouteTrackView: React.FC<RouteTrackViewProps> = ({
         </div>
 
         {/* Submodule Segmented Pills */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto no-scrollbar max-w-full shrink-0">
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto touch-scroll no-scrollbar max-w-full shrink-0">
           {modules.map((m) => {
             const isActive = activeModule === m.id;
             return (
@@ -91,7 +95,7 @@ export const RouteTrackView: React.FC<RouteTrackViewProps> = ({
                 key={m.id}
                 onClick={() => handleSelect(m.id)}
                 className={clsx(
-                  'px-3 sm:px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0',
+                  'px-3 sm:px-3.5 py-1.5 min-h-[36px] rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0',
                   isActive
                     ? 'bg-white dark:bg-parchment-800 text-ink-light dark:text-ink-dark font-bold shadow-sm border border-parchment-300 dark:border-parchment-700'
                     : 'text-ink-muted hover:text-ink-light dark:hover:text-ink-dark hover:bg-parchment-200/60 dark:hover:bg-parchment-800/60'
@@ -118,6 +122,8 @@ export const RouteTrackView: React.FC<RouteTrackViewProps> = ({
         <UrlLifecycleModule
           onChallengeComplete={onChallengeComplete}
           completedChallenges={progress.completedChallenges}
+          initialStep={initialStep}
+          onStepChange={onStepChange}
         />
       )}
       {activeModule === 'tcp-congestion' && (

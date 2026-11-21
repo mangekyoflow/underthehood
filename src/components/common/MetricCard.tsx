@@ -67,20 +67,20 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   return (
     <div
       className={clsx(
-        'rounded-xl border p-3.5 transition-all duration-200 flex flex-col justify-between shadow-xs hover:-translate-y-0.5',
+        'rounded-xl border p-3 sm:p-3.5 transition-all duration-200 flex flex-col justify-between shadow-xs hover:-translate-y-0.5 min-w-0 overflow-hidden',
         borderColors[variant],
         isChanged && flashAnimation[variant],
         className
       )}
     >
-      <div className="flex items-center justify-between gap-2 mb-1.5">
-        <span className="text-[11px] font-mono uppercase tracking-wider text-ink-muted dark:text-ink-darkMuted font-semibold">
+      <div className="flex items-center justify-between gap-1.5 mb-1.5 min-w-0">
+        <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-ink-muted dark:text-ink-darkMuted font-semibold truncate">
           {label}
         </span>
         {change && (
           <span
             className={clsx(
-              'text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold',
+              'text-[9px] sm:text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold shrink-0',
               trend === 'up' &&
                 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25',
               trend === 'down' &&
@@ -96,24 +96,27 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         )}
       </div>
 
-      <div className="flex items-baseline gap-1.5 overflow-hidden">
+      <div className="flex items-baseline gap-1 sm:gap-1.5 overflow-hidden min-w-0">
         <span
           key={String(value)}
           className={clsx(
-            'text-xl md:text-2xl font-bold font-mono tracking-tight inline-block',
+            'text-lg sm:text-xl md:text-2xl font-bold font-mono tracking-tight inline-block truncate',
             textColors[variant],
             isChanged && 'animate-value-swap'
           )}
+          title={String(value)}
         >
           {value}
         </span>
         {unit && (
-          <span className="text-xs font-mono text-ink-muted dark:text-ink-darkMuted">{unit}</span>
+          <span className="text-[10px] sm:text-xs font-mono text-ink-muted dark:text-ink-darkMuted shrink-0">
+            {unit}
+          </span>
         )}
       </div>
 
       {description && (
-        <div className="mt-1.5 text-[11px] text-ink-muted dark:text-ink-darkMuted leading-tight font-sans">
+        <div className="mt-1.5 text-[10px] sm:text-[11px] text-ink-muted dark:text-ink-darkMuted leading-tight font-sans line-clamp-2">
           {description}
         </div>
       )}

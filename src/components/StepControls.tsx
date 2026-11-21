@@ -25,6 +25,17 @@ export const StepControls: React.FC<Props> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const t = TRANSLATIONS[lang];
 
+  // Pause auto-play when user moves out of the browser tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setIsPlaying(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
   // Auto-play loop
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -41,15 +52,15 @@ export const StepControls: React.FC<Props> = ({
   }, [isPlaying, currentStep, totalSteps, onNext]);
 
   return (
-    <div className="w-full flex flex-wrap items-center justify-between gap-4 py-3 px-4 rounded-xl bg-white/70 dark:bg-parchment-900/70 border border-parchment-200 dark:border-parchment-800 shadow-xs">
-      {/* Step Dots Scrubber */}
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-mono font-semibold text-ink-muted dark:text-ink-darkMuted mr-1">
+    <div className="w-full flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 py-3 px-3 sm:px-4 rounded-xl bg-white/70 dark:bg-parchment-900/70 border border-parchment-200 dark:border-parchment-800 shadow-xs">
+      {/* Step Dots Scrubber (Adaptive horizontal scroll for many steps) */}
+      <div className="flex items-center justify-between sm:justify-start gap-2 overflow-x-auto no-scrollbar py-0.5 touch-scroll">
+        <span className="text-xs font-mono font-semibold text-ink-muted dark:text-ink-darkMuted mr-1 shrink-0">
           {t.stepOf
             .replace('{current}', String(currentStep + 1))
             .replace('{total}', String(totalSteps))}
         </span>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0">
           {Array.from({ length: totalSteps }).map((_, idx) => (
             <button
               key={idx}
@@ -57,7 +68,7 @@ export const StepControls: React.FC<Props> = ({
                 playTick();
                 onSelectStep(idx);
               }}
-              className={`h-2.5 rounded-full transition-all duration-300 ease-out cursor-pointer ${
+              className={`h-2.5 rounded-full transition-all duration-300 ease-out cursor-pointer min-h-[14px] flex items-center ${
                 idx === currentStep
                   ? 'w-7 bg-blue-600 dark:bg-blue-400 shadow-sm scale-105'
                   : idx < currentStep
@@ -65,28 +76,30 @@ export const StepControls: React.FC<Props> = ({
                     : 'w-2.5 bg-parchment-300 dark:bg-parchment-700 hover:bg-parchment-400 hover:scale-110'
               }`}
               title={`Jump to step ${idx + 1}`}
+              aria-label={`Step ${idx + 1}`}
             />
           ))}
         </div>
       </div>
 
-      {/* Button Controls */}
-      <div className="flex items-center gap-2">
+      {/* Button Controls (Full-width responsive stretch on mobile) */}
+      <div className="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-2 w-full sm:w-auto">
         {/* Play/Pause */}
         <button
           onClick={() => {
             playTick();
             setIsPlaying(!isPlaying);
           }}
-          className={`btn-pop p-2 rounded-lg border text-xs font-mono font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
+          className={`btn-pop p-2 sm:px-2.5 rounded-lg border text-xs font-mono font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer min-h-[38px] ${
             isPlaying
               ? 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400'
               : 'border-parchment-300 dark:border-parchment-700 text-ink-muted hover:text-ink-light dark:hover:text-ink-dark'
           }`}
           title={isPlaying ? t.pause : t.autoPlay}
+          aria-label={isPlaying ? t.pause : t.autoPlay}
         >
           {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
-          <span className="hidden sm:inline">{isPlaying ? t.pause : t.autoPlay}</span>
+          <span className="hidden xs:inline sm:inline">{isPlaying ? t.pause : t.autoPlay}</span>
         </button>
 
         {/* Reset */}
@@ -95,8 +108,9 @@ export const StepControls: React.FC<Props> = ({
             playTick();
             onReset();
           }}
-          className="btn-pop p-2 rounded-lg border border-parchment-300 dark:border-parchment-700 text-ink-muted hover:text-ink-light dark:hover:text-ink-dark transition-all cursor-pointer"
+          className="btn-pop p-2 rounded-lg border border-parchment-300 dark:border-parchment-700 text-ink-muted hover:text-ink-light dark:hover:text-ink-dark transition-all cursor-pointer min-h-[38px] min-w-[38px] flex items-center justify-center"
           title={t.resetStep}
+          aria-label={t.resetStep}
         >
           <RotateCcw className="w-3.5 h-3.5" />
         </button>
@@ -108,7 +122,7 @@ export const StepControls: React.FC<Props> = ({
             onPrev();
           }}
           disabled={currentStep === 0}
-          className="btn-pop px-3 py-1.5 rounded-lg border border-parchment-300 dark:border-parchment-700 text-xs font-mono font-medium text-ink-light dark:text-ink-dark hover:bg-parchment-100 dark:hover:bg-parchment-800 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer"
+          className="btn-pop flex-1 sm:flex-none justify-center px-3 py-1.5 rounded-lg border border-parchment-300 dark:border-parchment-700 text-xs font-mono font-medium text-ink-light dark:text-ink-dark hover:bg-parchment-100 dark:hover:bg-parchment-800 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer min-h-[38px]"
         >
           <ChevronLeft className="w-4 h-4" />
           <span>{t.prevStep}</span>
@@ -121,7 +135,7 @@ export const StepControls: React.FC<Props> = ({
             onNext();
           }}
           disabled={currentStep === totalSteps - 1}
-          className="btn-pop px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-mono font-semibold shadow-xs disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer"
+          className="btn-pop flex-1 sm:flex-none justify-center px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-mono font-semibold shadow-xs disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-1 cursor-pointer min-h-[38px]"
         >
           <span>{t.nextStep}</span>
           <ChevronRight className="w-4 h-4" />

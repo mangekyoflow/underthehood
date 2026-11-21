@@ -688,10 +688,94 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
       },
     ],
   },
+  'foc-motor-control': {
+    id: 'foc-motor-control',
+    trackId: 'actuate',
+    number: '10',
+    title: 'Field-Oriented Control & SVPWM',
+    subtitle: 'Vector Commutation, Clarke/Park Transforms & 3-Phase Inverter',
+    tagline:
+      'Decouple magnetic flux from electromagnetic torque using Clarke & Park transforms to drive robotic PMSM actuators at peak efficiency.',
+    accentColor: 'robotics',
+    overview:
+      'Brushed DC motors mechanically commutate via brushes and commutator segments, causing friction, sparks, and wear. Brushless PMSM and BLDC motors achieve high power density and longevity by electronically commutating three-phase stator windings. Field-Oriented Control (FOC) is the gold standard for high-performance robotics.',
+    concept:
+      'FOC transforms three-phase stationary currents (Ia, Ib, Ic) into a stationary orthogonal frame (Iα, Iβ) via Clarke Transform, and then rotates them into the rotor reference frame (Id, Iq) via Park Transform using high-resolution encoder feedback (θ_e). Direct current (Id) controls magnetic flux along the rotor pole, while Quadrature current (Iq) directly dictates mechanical torque (τ = 1.5 * p * λ_m * Iq). Space Vector PWM (SVPWM) calculates optimal switching sequences across 6 inverter sectors, providing 15.5% higher DC-bus voltage utilization than sinusoidal PWM.',
+    architectureDetails: {
+      components: [
+        {
+          name: 'Optical / Magnetic Encoder (19-bit)',
+          role: 'Rotor Angle Measurement',
+          details:
+            'Supplies sub-milliradian absolute rotor position θ_e for synchronous Clarke/Park reference frame rotation.',
+        },
+        {
+          name: 'Clarke Transform (abc ➔ αβ)',
+          role: 'Stationary Coordinate Reduction',
+          details:
+            'Converts 3-phase currents into 2-phase orthogonal vectors: Iα = Ia, Iβ = (Ia + 2Ib)/√3.',
+        },
+        {
+          name: 'Park Transform (αβ ➔ dq)',
+          role: 'Rotating Frame Alignment',
+          details:
+            'Projects orthogonal currents onto the rotor magnetic axis: Id = Iα·cos(θ) + Iβ·sin(θ), Iq = -Iα·sin(θ) + Iβ·cos(θ).',
+        },
+        {
+          name: 'Dual PI Current Regulators',
+          role: 'Current Loop Control',
+          details:
+            'Executes high-speed PI loops (typically at 20-50 kHz) to drive Id to 0 (or negative in field-weakening) and Iq to target torque.',
+        },
+        {
+          name: 'Inverse Park Transform (dq ➔ αβ)',
+          role: 'Voltage Stator Reconstruction',
+          details:
+            'Translates reference voltage commands Vd*, Vq* back to the stationary stator coordinate system Vα, Vβ.',
+        },
+        {
+          name: 'Space Vector PWM (SVPWM) Modulator',
+          role: 'Hexagon Switching Generation',
+          details:
+            'Selects active inverter voltage vectors (V1-V6) and zero vectors (V0, V7) to synthesize the rotating stator flux vector.',
+        },
+        {
+          name: '3-Phase GaN / MOSFET H-Bridge Inverter',
+          role: 'Power Stage',
+          details:
+            'High-frequency switching bridge applying pulse-width-modulated bus voltage to U, V, W motor windings.',
+        },
+      ],
+    },
+    keyTakeaway:
+      'By decoupling torque generation (Iq) from magnetic flux alignment (Id), FOC eliminates torque ripple and maximizes motor torque per ampere (MTPA). In high-speed runs where Back-EMF approaches DC bus voltage, injecting negative Id (field weakening) opposes rotor permanent magnet flux to extend RPM beyond the base speed envelope.',
+    challenges: [
+      {
+        id: 'challenge-foc-1',
+        moduleId: 'foc-motor-control',
+        title: 'Torque Commutation & Rotor Alignment',
+        description:
+          'Set Quadrature Current Iq ≥ 15 A while keeping Direct Current Id at 0 A to produce over 2.0 Nm of clean motor torque.',
+        hint: 'Use the Iq slider to raise torque current, and observe the space vector voltage hexagon track smoothly.',
+        targetCriteria: 'foc-torque-target-achieved',
+        completed: false,
+      },
+      {
+        id: 'challenge-foc-2',
+        moduleId: 'foc-motor-control',
+        title: 'Field-Weakening High-Speed Sprint',
+        description:
+          'Inject negative direct current (Id ≤ -3 A) to engage field weakening and achieve motor RPM > 3000 under DC bus voltage constraints.',
+        hint: 'Adjust Id below -3 A to weaken rotor magnet Back-EMF and observe the field-weakening badge illuminate.',
+        targetCriteria: 'foc-field-weakening-engaged',
+        completed: false,
+      },
+    ],
+  },
   'uvm-verification': {
     id: 'uvm-verification',
     trackId: 'silicon',
-    number: '10',
+    number: '11',
     title: 'UVM & Cocotb Hardware Verification',
     subtitle: 'Constrained-Random Testbench & Functional Coverage',
     tagline:
@@ -769,7 +853,7 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
   'pre-silicon-emulation': {
     id: 'pre-silicon-emulation',
     trackId: 'silicon',
-    number: '11',
+    number: '12',
     title: 'Pre-Silicon Emulation & CDC',
     subtitle: 'Clock Domain Crossing, Metastability & Dual-Clock FIFO',
     tagline:
@@ -838,6 +922,84 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
           'Observe a metastability timing violation on an unsynchronized line, then switch to a 2-FF or Async FIFO to restore MTBF reliability.',
         hint: 'Click "Inject Setup/Hold Hazard" under No Synchronizer mode to observe metastability, then engage the 2-FF Synchronizer.',
         targetCriteria: 'cdc-hazard-mitigated',
+        completed: false,
+      },
+    ],
+  },
+  'riscv-pipeline': {
+    id: 'riscv-pipeline',
+    trackId: 'silicon',
+    number: '13',
+    title: 'RISC-V 5-Stage Pipelined Processor',
+    subtitle: 'Instruction Parallelism, Hazard Unit & Data Forwarding',
+    tagline:
+      'Step through IF, ID, EX, MEM, and WB stages to witness how modern hardware hazard units eliminate pipeline stalls and resolve data hazards.',
+    accentColor: 'silicon',
+    overview:
+      'Single-cycle processors are limited by the slowest instruction path (load word), leading to abysmal clock frequencies. Pipelining breaks instruction execution into discrete clock stages (IF, ID, EX, MEM, WB), dramatically increasing processor throughput and instruction-level parallelism (ILP).',
+    concept:
+      'Pipelining introduces structural, data (Read-After-Write), and control (branch) hazards. Without mitigation, a dependent instruction must wait up to 3 cycles for its operand to be written back to the register file. Modern processors solve this with Hardware Forwarding (bypassing the ALU result directly from EX or MEM stage into the EX stage input multiplexers) and Load-Use Hazard Detection (inserting a single hardware bubble stall when an instruction consumes data immediately loaded from memory).',
+    architectureDetails: {
+      components: [
+        {
+          name: 'IF: Instruction Fetch',
+          role: 'Program Counter & I-Cache',
+          details:
+            'Fetches 32-bit RISC-V instruction from memory address pointed to by PC, then increments PC = PC + 4 (or updates on branch target).',
+        },
+        {
+          name: 'ID: Instruction Decode & Register Read',
+          role: 'Decoder & Dual-Port Regfile',
+          details:
+            'Decodes opcode, extracts source register identifiers (rs1, rs2) and destination (rd), sign-extends immediates, and reads register values.',
+        },
+        {
+          name: 'EX: Execute / ALU & Address Calc',
+          role: 'Arithmetic & Branch Computation',
+          details:
+            'Performs ALU operations (ADD, SUB, SLT, AND, OR), computes effective memory address for loads/stores, and evaluates branch conditions.',
+        },
+        {
+          name: 'MEM: Data Memory Access',
+          role: 'Load & Store Execution',
+          details:
+            'Reads word from Data Memory on LW instruction, or writes word to Data Memory on SW instruction. Bypasses for ALU instructions.',
+        },
+        {
+          name: 'WB: Register Writeback',
+          role: 'Architectural State Commit',
+          details:
+            'Writes the final result (ALU output or memory read data) back to destination register rd in the register file.',
+        },
+        {
+          name: 'Hazard & Forwarding Unit',
+          role: 'Data Dependency Bypasser',
+          details:
+            'Compares destination registers (EX.rd, MEM.rd) with source registers (ID.rs1, ID.rs2) to drive forwarding multiplexers and stall bubbles.',
+        },
+      ],
+    },
+    keyTakeaway:
+      'Data forwarding eliminates stall cycles for ALU-to-ALU dependencies. However, for a Load instruction immediately followed by a dependent instruction (Load-Use hazard), the data is not available until the end of MEM stage, requiring mandatory hardware bubble insertion (1 cycle stall). Branch prediction flushes speculatively fetched instructions when a branch is taken.',
+    challenges: [
+      {
+        id: 'challenge-riscv-1',
+        moduleId: 'riscv-pipeline',
+        title: 'Bypass RAW Data Hazard via Forwarding',
+        description:
+          'Step the pipeline through dependent ALU instructions and observe the EX-to-EX or MEM-to-EX forwarding unit supply operands without inserting a stall.',
+        hint: 'Select the "Data Hazard & Bypassing" preset and step clock cycles to watch the forwarding arrows activate.',
+        targetCriteria: 'riscv-forwarding-observed',
+        completed: false,
+      },
+      {
+        id: 'challenge-riscv-2',
+        moduleId: 'riscv-pipeline',
+        title: 'Load-Use Bubble Insertion & Stall',
+        description:
+          'Execute a Load-Word instruction followed immediately by an ALU consumer to observe the hazard unit inject an instruction bubble into EX stage.',
+        hint: 'Select the "Load-Use Hazard Stall" preset and step to cycle 4 to observe the hardware pipeline bubble.',
+        targetCriteria: 'riscv-load-use-bubble-inserted',
         completed: false,
       },
     ],

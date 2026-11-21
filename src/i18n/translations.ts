@@ -108,7 +108,7 @@ export interface Translations {
 
 export const TRANSLATIONS: Record<Language, Translations> = {
   en: {
-    courseTitle: 'underthehood',
+    courseTitle: 'Designed to Secure',
     courseSubtitle: 'Web Security, Identity & Applied Cryptography',
     badgeInteractive: 'interactive',
     courseIndex: 'Course Index',
@@ -187,12 +187,12 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     structureInspector: 'Physical Structure & Topology Inspector',
     switchModule: 'Modules',
     viewStructure: 'Hardware View',
-    footerTitle: 'underthehood',
+    footerTitle: 'Designed to Scale Unified Suite',
     footerTagline: '35 Explorable Modules across Security, Networking, Storage, Robotics & Silicon',
     builtForSystems: 'Built for tactile systems engineering and security comprehension.',
   },
   es: {
-    courseTitle: 'underthehood',
+    courseTitle: 'Diseñado para Asegurar',
     courseSubtitle: 'Seguridad Web, Identidad y Criptografía Aplicada',
     badgeInteractive: 'interactivo',
     courseIndex: 'Índice del Curso',
@@ -271,13 +271,13 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     structureInspector: 'Inspector de Estructura Física y Topología',
     switchModule: 'Módulos',
     viewStructure: 'Vista de Hardware',
-    footerTitle: 'underthehood',
+    footerTitle: 'Suite Unificada Designed to Scale',
     footerTagline: '35 Módulos Explorables en Seguridad, Redes, Almacenamiento, Robótica y Silicio',
     builtForSystems:
       'Diseñado para la ingeniería de sistemas táctil y la comprensión de seguridad.',
   },
   ja: {
-    courseTitle: 'underthehood',
+    courseTitle: 'Designed to Secure',
     courseSubtitle: 'Webセキュリティ、アイデンティティ、応用暗号学',
     badgeInteractive: 'インタラクティブ',
     courseIndex: 'コース目次',
@@ -356,13 +356,13 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     structureInspector: '物理構造およびトポロジー・インスペクター',
     switchModule: 'モジュール',
     viewStructure: 'ハードウェア構造',
-    footerTitle: 'underthehood',
+    footerTitle: 'Designed to Scale 統合スイート',
     footerTagline:
       'セキュリティ、ネットワーク、ストレージ、ロボティクス、シリコンにわたる35の体験型モジュール',
     builtForSystems: '触覚的システム工学と直感的なセキュリティ理解のために設計。',
   },
   de: {
-    courseTitle: 'underthehood',
+    courseTitle: 'Designed to Secure',
     courseSubtitle: 'Websicherheit, Identität & Angewandte Kryptographie',
     badgeInteractive: 'interaktiv',
     courseIndex: 'Kursübersicht',
@@ -441,14 +441,14 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     structureInspector: 'Inspektor für physische Struktur & Topologie',
     switchModule: 'Module',
     viewStructure: 'Hardware-Ansicht',
-    footerTitle: 'underthehood',
+    footerTitle: 'Designed to Scale Gesamtsuite',
     footerTagline:
       '35 interaktive Module für Sicherheit, Netzwerke, Storage, Robotik und Halbleiter',
     builtForSystems:
       'Entwickelt für greifbare Systemtechnik und intuitives Sicherheitsverständnis.',
   },
   fr: {
-    courseTitle: 'underthehood',
+    courseTitle: 'Designed to Secure',
     courseSubtitle: 'Sécurité Web, Identité et Cryptographie Appliquée',
     badgeInteractive: 'interactif',
     courseIndex: 'Index du cours',
@@ -527,7 +527,7 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     structureInspector: 'Inspecteur de Structure Physique & Topologie',
     switchModule: 'Modules',
     viewStructure: 'Vue Matérielle',
-    footerTitle: 'underthehood',
+    footerTitle: 'Suite Unifiée Designed to Scale',
     footerTagline:
       '35 modules interactifs à travers la Sécurité, les Réseaux, le Stockage, la Robotique et le Silicium',
     builtForSystems:

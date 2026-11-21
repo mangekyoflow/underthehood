@@ -244,8 +244,8 @@ export const SearchModal: React.FC<Props> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-8 sm:pt-24 p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-2xl rounded-2xl bg-parchment-50 dark:bg-parchment-950 border border-parchment-200 dark:border-parchment-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] sm:max-h-[80vh]">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-4 sm:pt-24 p-2 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))]">
+      <div className="relative w-full max-w-2xl rounded-2xl bg-parchment-50 dark:bg-parchment-950 border border-parchment-200 dark:border-parchment-800 shadow-2xl overflow-hidden flex flex-col max-h-[85dvh] sm:max-h-[80vh]">
         {/* Search Input Bar */}
         <div className="p-3 sm:p-4 border-b border-parchment-200 dark:border-parchment-800 bg-white dark:bg-parchment-900 flex items-center gap-2.5 sm:gap-3">
           <Search className="w-5 h-5 text-blue-500 flex-shrink-0" />
@@ -258,7 +258,7 @@ export const SearchModal: React.FC<Props> = ({
               setSelectedIndex(0);
             }}
             placeholder={t.searchPlaceholder}
-            className="w-full bg-transparent text-sm font-sans text-ink-light dark:text-ink-dark placeholder:text-ink-muted dark:placeholder:text-ink-darkMuted focus:outline-none"
+            className="w-full bg-transparent text-base sm:text-sm font-sans text-ink-light dark:text-ink-dark placeholder:text-ink-muted dark:placeholder:text-ink-darkMuted focus:outline-none"
           />
           {query && (
             <button

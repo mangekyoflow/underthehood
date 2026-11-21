@@ -83,6 +83,17 @@ export const TcpCongestionModule: React.FC<TcpCongestionModuleProps> = ({
     });
   };
 
+  // Stop playback when moving out of the browser tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setIsPlaying(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
   // Playback timer
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | null = null;

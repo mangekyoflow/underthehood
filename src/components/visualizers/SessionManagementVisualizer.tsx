@@ -111,6 +111,17 @@ export const SessionManagementVisualizer: React.FC<Props> = ({
 
   const activeStep = stepsData[currentStep] || stepsData[0];
 
+  // Stop autoPlay when tab is hidden
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setAutoPlay(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
     if (autoPlay) {

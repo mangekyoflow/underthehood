@@ -47,3 +47,25 @@ export interface RosPacket {
   status: 'sent' | 'in-flight' | 'delivered' | 'dropped';
   payload: string;
 }
+
+export interface FocState {
+  thetaDeg: number;
+  rpm: number;
+  id: number;
+  iq: number;
+  vBus: number;
+  iAlpha: number;
+  iBeta: number;
+  vAlpha: number;
+  vBeta: number;
+  vMagnitude: number;
+  vAngleDeg: number;
+  sector: number;
+  dutyA: number;
+  dutyB: number;
+  dutyC: number;
+  torqueNm: number;
+  powerWatts: number;
+  efficiencyPct: number;
+  isFieldWeakening: boolean;
+}

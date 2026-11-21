@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { SiliconModuleId, UserProgress } from '../../types';
 import { UvmTestbenchVisualizer } from '../visualizers/UvmTestbenchVisualizer';
 import { ClockDomainCrossingVisualizer } from '../visualizers/ClockDomainCrossingVisualizer';
+import { RiscvPipelineVisualizer } from '../visualizers/RiscvPipelineVisualizer';
 import { SiliconStructureViewer } from './SiliconStructureViewer';
 import { Badge } from '../common/Badge';
 import { playTick } from '../../lib/sound';
@@ -34,15 +35,21 @@ export const SiliconTrackView: React.FC<SiliconTrackViewProps> = ({
   const modules = [
     {
       id: 'uvm-verification' as SiliconModuleId,
-      num: '09',
+      num: '11',
       title: 'UVM & Cocotb Verification',
       desc: 'Constrained-random testbench & functional coverage',
     },
     {
       id: 'pre-silicon-emulation' as SiliconModuleId,
-      num: '10',
+      num: '12',
       title: 'Pre-Silicon Emulation & CDC',
       desc: 'Clock domain crossing, metastability & async FIFOs',
+    },
+    {
+      id: 'riscv-pipeline' as SiliconModuleId,
+      num: '13',
+      title: 'RISC-V 5-Stage Pipeline',
+      desc: 'Data hazards, forwarding unit & bubble stalls',
     },
   ];
 
@@ -80,7 +87,7 @@ export const SiliconTrackView: React.FC<SiliconTrackViewProps> = ({
         </div>
 
         {/* Submodule Segmented Pills */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto no-scrollbar max-w-full shrink-0">
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto touch-scroll no-scrollbar max-w-full shrink-0">
           {modules.map((m) => {
             const isActive = activeView === m.id;
             return (
@@ -88,7 +95,7 @@ export const SiliconTrackView: React.FC<SiliconTrackViewProps> = ({
                 key={m.id}
                 onClick={() => handleSelectModule(m.id)}
                 className={clsx(
-                  'px-3 sm:px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0',
+                  'px-3 sm:px-3.5 py-1.5 min-h-[36px] rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0',
                   isActive
                     ? 'bg-white dark:bg-parchment-800 text-ink-light dark:text-ink-dark font-bold shadow-sm border border-parchment-300 dark:border-parchment-700'
                     : 'text-ink-muted hover:text-ink-light dark:hover:text-ink-dark hover:bg-parchment-200/60 dark:hover:bg-parchment-800/60'
@@ -112,7 +119,7 @@ export const SiliconTrackView: React.FC<SiliconTrackViewProps> = ({
           <button
             onClick={handleSelectStructure}
             className={clsx(
-              'px-3 sm:px-3.5 py-1.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0',
+              'px-3 sm:px-3.5 py-1.5 min-h-[36px] rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0',
               activeView === 'silicon-structure'
                 ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-bold shadow-sm border border-emerald-500/40'
                 : 'text-ink-muted hover:text-ink-light dark:hover:text-ink-dark hover:bg-parchment-200/60 dark:hover:bg-parchment-800/60'
@@ -133,6 +140,12 @@ export const SiliconTrackView: React.FC<SiliconTrackViewProps> = ({
       )}
       {activeView === 'pre-silicon-emulation' && (
         <ClockDomainCrossingVisualizer
+          onChallengeComplete={onChallengeComplete}
+          completedChallenges={progress.completedChallenges}
+        />
+      )}
+      {activeView === 'riscv-pipeline' && (
+        <RiscvPipelineVisualizer
           onChallengeComplete={onChallengeComplete}
           completedChallenges={progress.completedChallenges}
         />

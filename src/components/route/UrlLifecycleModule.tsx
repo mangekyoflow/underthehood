@@ -21,6 +21,8 @@ import {
   BarChart3,
   ChevronDown,
   ChevronUp,
+  Lightbulb,
+  Sparkles,
 } from 'lucide-react';
 import { UrlLifecycleStep, DnsCacheStatus } from '../../types/route';
 import { MODULES } from '../../data/modulesData';
@@ -39,11 +41,15 @@ import clsx from 'clsx';
 interface UrlLifecycleModuleProps {
   onChallengeComplete: (id: string) => void;
   completedChallenges: Record<string, boolean>;
+  initialStep?: number;
+  onStepChange?: (step: number) => void;
 }
 
 export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
   onChallengeComplete,
   completedChallenges,
+  initialStep = 0,
+  onStepChange,
 }) => {
   const moduleData = MODULES['url-lifecycle'];
 
@@ -57,10 +63,31 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
   );
 
   // Playback State
-  const [currentStepIdx, setCurrentStepIdx] = useState(0);
+  const [currentStepIdx, setCurrentStepIdx] = useState(initialStep);
+
+  useEffect(() => {
+    if (initialStep !== undefined && initialStep >= 0) {
+      setCurrentStepIdx(initialStep);
+    }
+  }, [initialStep]);
+
+  useEffect(() => {
+    onStepChange?.(currentStepIdx);
+  }, [currentStepIdx, onStepChange]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [logs, setLogs] = useState<LogEntry[]>([]);
+
+  // Stop playback when moving out of the browser tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setIsPlaying(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
 
   const targetServerIp =
     dnsRecordType === 'AAAA'
@@ -77,6 +104,7 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
     list.push({
       id: 1,
       phase: 'DNS',
+      chapter: 'STAGE 01 // CLIENT INITIATION',
       title: '1. User Enters URL & Initiates Navigation',
       shortLabel: 'URL Input',
       sourceNode: 'browser',
@@ -94,7 +122,17 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
         Engine: 'V8 / Blink Network Service',
       },
       explanation:
-        'User submits the URL in the navigation bar. The browser parses the scheme, hostname, and path, and checks whether the domain requires HSTS preload or immediate DNS resolution.',
+        'You type the URL into the navigation bar and hit Enter. The browser engine parses the scheme, host, and path, checks local HSTS preload lists, and determines whether an IP lookup is necessary before placing any packet on the physical network.',
+      callout: {
+        kind: 'insight',
+        title: 'Every Request is a Protocol Stack',
+        text: 'A web request is a coordinated multi-tiered conversation: DNS resolves numeric IP addresses, TCP synchronizes socket state, TLS derives encryption keys, and HTTP transfers serialized resources.',
+      },
+      changes: [
+        '+ Navigation initiated',
+        '+ Checking local HSTS preload list',
+        '+ Socket pool allocated',
+      ],
       latencyMs: 1,
     });
 
@@ -103,6 +141,7 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
       list.push({
         id: 2,
         phase: 'DNS',
+        chapter: 'STAGE 02 // DOMAIN NAME SYSTEM (DNS)',
         title: '2. Browser DNS Cache HIT',
         shortLabel: 'Browser Cache Hit',
         sourceNode: 'browser',
@@ -119,13 +158,24 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
           'TTL-Remaining': '240s',
         },
         explanation:
-          'Browser finds a valid, unexpired DNS record in its internal in-memory cache. All subsequent DNS lookup steps are completely bypassed!',
+          'Browser finds a valid, unexpired DNS record in its internal in-memory cache. All subsequent network DNS lookup hops are completely bypassed!',
+        callout: {
+          kind: 'tip',
+          title: 'Why DNS Caching Matters',
+          text: 'DNS answers are cached according to their TTL (Time-To-Live). On cache hits, repeat navigations avoid network round trips entirely, saving 20-150ms of network latency.',
+        },
+        changes: [
+          '~ In-memory cache hit: 104.21.58.12',
+          '+ 0 ms network overhead',
+          '+ Skipping network DNS resolution',
+        ],
         latencyMs: 1,
       });
     } else {
       list.push({
         id: 2,
         phase: 'DNS',
+        chapter: 'STAGE 02 // DOMAIN NAME SYSTEM (DNS)',
         title: '2. Browser DNS Cache MISS',
         shortLabel: 'Browser Cache Miss',
         sourceNode: 'browser',
@@ -141,7 +191,13 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
           Status: 'MISS (Cache Expired or Cold)',
         },
         explanation:
-          'Browser checks its internal DNS cache (typically 1-minute TTL). The record is absent or expired, so the browser issues a getaddrinfo() system call to the OS resolver.',
+          'Browser checks its internal DNS cache (typically 1-minute TTL). The record is absent or expired, so the browser issues a getaddrinfo() system call to the host OS resolver.',
+        callout: {
+          kind: 'insight',
+          title: 'Cache Eviction or Cold Start',
+          text: 'The browser in-memory cache holds no active record for this domain. It delegates lookup to the host operating system stub resolver.',
+        },
+        changes: ['+ getaddrinfo() system call issued', '+ Checking OS socket cache'],
         latencyMs: 2,
       });
 
@@ -149,6 +205,7 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
         list.push({
           id: 3,
           phase: 'DNS',
+          chapter: 'STAGE 02 // DOMAIN NAME SYSTEM (DNS)',
           title: '3. Operating System DNS Cache HIT',
           shortLabel: 'OS Cache Hit',
           sourceNode: 'os-resolver',
@@ -166,6 +223,12 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
           },
           explanation:
             'The operating system finds the IP address in its local socket resolver cache or local hosts file. Recursive network DNS queries are skipped.',
+          callout: {
+            kind: 'tip',
+            title: 'Operating System Cache Hit',
+            text: 'The OS resolver (/etc/hosts or systemd-resolved) holds an active entry, returning the IP without outbound network traffic.',
+          },
+          changes: ['~ Local socket resolver cache hit', '+ Recursive internet queries avoided'],
           latencyMs: 3,
           isReturnTrip: true,
         });
@@ -174,6 +237,7 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
         list.push({
           id: 3,
           phase: 'DNS',
+          chapter: 'STAGE 02 // DOMAIN NAME SYSTEM (DNS)',
           title: '3. Query Configured Recursive Resolver',
           shortLabel: 'OS -> Recursive DNS',
           sourceNode: 'os-resolver',
@@ -191,12 +255,23 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
           },
           explanation:
             'The OS resolver forwards a UDP datagram over port 53 to the configured Recursive Resolver (e.g., ISP Anycast or 8.8.8.8 / 1.1.1.1).',
+          callout: {
+            kind: 'tip',
+            title: 'Recursive Coordination',
+            text: 'The Recursive Resolver acts as your agent: it queries root, TLD, and authoritative nameservers on your behalf so your client device does not have to traverse the internet hierarchy directly.',
+          },
+          changes: [
+            '+ UDP port 53 datagram sent',
+            '+ Destination: 8.8.8.8',
+            '+ DNS transaction ID generated',
+          ],
           latencyMs: 15,
         });
 
         list.push({
           id: 4,
           phase: 'DNS',
+          chapter: 'STAGE 02 // DOMAIN NAME SYSTEM (DNS)',
           title: '4. Recursive Resolver Queries Root Server (.)',
           shortLabel: 'Recursive -> Root (.)',
           sourceNode: 'recursive-dns',
@@ -213,6 +288,12 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
           },
           explanation:
             'The Recursive Resolver does not hold the answer yet. It queries one of the 13 Root Server clusters for the ".dev" Top-Level Domain delegator.',
+          callout: {
+            kind: 'insight',
+            title: 'The 13 Root Server Clusters',
+            text: 'The 13 root server IP identities (hundreds of global anycast nodes) anchor the entire DNS hierarchy, delegating queries down to the specific TLD registry.',
+          },
+          changes: ['+ Root server referral received', '+ Next hop: .dev TLD nameservers'],
           latencyMs: 25,
         });
 
@@ -300,6 +381,7 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
         list.push({
           id: 7,
           phase: 'DNS',
+          chapter: 'STAGE 02 // DOMAIN NAME SYSTEM (DNS)',
           title: '7. Recursive Resolver Returns IP to Client OS',
           shortLabel: 'Recursive -> Client',
           sourceNode: 'recursive-dns',
@@ -327,6 +409,7 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
     list.push({
       id: list.length + 1,
       phase: 'TCP',
+      chapter: 'STAGE 03 // TCP TRANSPORT CONNECTION',
       title: '8. TCP Handshake: SYN (Client to Server)',
       shortLabel: 'TCP SYN',
       sourceNode: 'browser',
@@ -351,6 +434,7 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
     list.push({
       id: list.length + 1,
       phase: 'TCP',
+      chapter: 'STAGE 03 // TCP TRANSPORT CONNECTION',
       title: '9. TCP Handshake: SYN-ACK (Server to Client)',
       shortLabel: 'TCP SYN-ACK',
       sourceNode: 'web-server',
@@ -375,6 +459,7 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
     list.push({
       id: list.length + 1,
       phase: 'TCP',
+      chapter: 'STAGE 03 // TCP TRANSPORT CONNECTION',
       title: '10. TCP Handshake: ACK (Connection ESTABLISHED)',
       shortLabel: 'TCP ACK',
       sourceNode: 'browser',
@@ -393,6 +478,12 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
       },
       explanation:
         "The client acknowledges the server's SYN-ACK. The TCP socket enters the ESTABLISHED state. Both endpoints now possess synchronized sequence numbers.",
+      callout: {
+        kind: 'tip',
+        title: 'Reliable Byte Stream Ready',
+        text: 'The 3-way handshake is complete. Both client and server have agreed on window scaling, SACK capabilities, and sequence numbering.',
+      },
+      changes: ['+ Socket state: ESTABLISHED', '+ Bi-directional stream open'],
       latencyMs: 22,
     });
 
@@ -401,6 +492,7 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
       list.push({
         id: list.length + 1,
         phase: 'TLS',
+        chapter: 'STAGE 04 // TLS 1.3 ENCRYPTION',
         title: '11. TLS 1.3 ClientHello & Key Share',
         shortLabel: 'TLS ClientHello',
         sourceNode: 'browser',
@@ -419,12 +511,19 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
         },
         explanation:
           'In TLS 1.3, the client sends supported cipher suites and speculatively sends its Elliptic Curve Diffie-Hellman (ECDHE) key share in the very first packet, saving a full RTT compared to TLS 1.2.',
+        callout: {
+          kind: 'insight',
+          title: 'TLS 1.3 1-RTT Optimization',
+          text: 'In TLS 1.3, key exchange happens in the very first round trip. Speculatively sending the ECDHE key share eliminates an entire round trip compared to TLS 1.2.',
+        },
+        changes: ['+ Ephemeral x25519 key generated', '+ Supported ciphers offered'],
         latencyMs: 24,
       });
 
       list.push({
         id: list.length + 1,
         phase: 'TLS',
+        chapter: 'STAGE 04 // TLS 1.3 ENCRYPTION',
         title: '12. TLS 1.3 ServerHello, Cert & Handshake Finished',
         shortLabel: 'TLS ServerHello',
         sourceNode: 'web-server',
@@ -442,6 +541,12 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
         },
         explanation:
           'Server responds with its chosen cipher suite and matching public key share, presents its X.509 certificate, and concludes the handshake. All subsequent application data is encrypted.',
+        callout: {
+          kind: 'tip',
+          title: 'Zero-Knowledge Forward Secrecy',
+          text: "Because ephemeral Diffie-Hellman keys were used, even if the server's long-term private certificate key is stolen in the future, past recorded sessions can never be decrypted.",
+        },
+        changes: ['+ Symmetric AES-256 session key ready', '+ Handshake finished (encrypted)'],
         latencyMs: 24,
         isReturnTrip: true,
       });
@@ -451,6 +556,7 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
     list.push({
       id: list.length + 1,
       phase: 'HTTP',
+      chapter: 'STAGE 05 // APPLICATION & HTTP TRANSACTION',
       title: `13. HTTP GET Request (${protocolMode === 'HTTPS' ? 'Encrypted' : 'Plaintext'})`,
       shortLabel: 'HTTP Request',
       sourceNode: 'browser',
@@ -470,6 +576,12 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
       },
       explanation:
         'The browser formats and transmits the HTTP request payload across the established, encrypted socket channel.',
+      callout: {
+        kind: 'tip',
+        title: 'HTTP/2 Multiplexing',
+        text: 'Over this single established connection, HTTP/2 can multiplex dozens of concurrent asset requests simultaneously, eliminating head-of-line blocking.',
+      },
+      changes: ['+ HTTP GET /v1/metrics transmitted', '+ Encrypted binary framing active'],
       latencyMs: 20,
     });
 
@@ -477,6 +589,7 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
     list.push({
       id: list.length + 1,
       phase: 'HTTP',
+      chapter: 'STAGE 05 // APPLICATION & HTTP TRANSACTION',
       title: '14. Web Server & Application Execution',
       shortLabel: 'App Processing',
       sourceNode: 'web-server',
@@ -494,6 +607,16 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
       },
       explanation:
         'The edge reverse proxy passes the request to backend application handlers, executes database queries, prepares JSON/HTML, and compresses the response with Brotli.',
+      callout: {
+        kind: 'insight',
+        title: 'Stateless Services & Dedicated Databases',
+        text: 'Keeping application servers stateless and isolating data in databases is what enables elastic scaling across clusters without session stickiness.',
+      },
+      changes: [
+        '+ Reverse proxy routing (Nginx/Envoy)',
+        '+ Database query executed (1.8ms)',
+        '+ Brotli compression applied',
+      ],
       latencyMs: 35,
     });
 
@@ -501,6 +624,7 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
     list.push({
       id: list.length + 1,
       phase: 'HTTP',
+      chapter: 'STAGE 05 // APPLICATION & HTTP TRANSACTION',
       title: '15. HTTP 200 OK Response Delivered',
       shortLabel: 'HTTP Response',
       sourceNode: 'web-server',
@@ -1011,23 +1135,111 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
           </div>
         </div>
 
-        {/* Step-by-Step Explanation Banner */}
-        <div className="mt-4 p-4 rounded-xl border border-parchment-200 dark:border-parchment-800 bg-white dark:bg-parchment-950">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+        {/* Step-by-Step Stage Explanation Banner (designed-to-scale style) */}
+        <div className="mt-4 p-5 sm:p-6 rounded-2xl border border-parchment-200 dark:border-parchment-800 bg-white/95 dark:bg-parchment-900/95 shadow-sm space-y-4">
+          {/* Header Bar: Chapter / Phase & Latency */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5 pb-3 border-b border-parchment-200/80 dark:border-parchment-800/80">
             <div className="flex items-center gap-2">
-              <Badge variant="cyan">{currentStep.phase}</Badge>
-              <h3 className="text-sm font-serif font-bold text-ink-light dark:text-ink-dark">
-                {currentStep.title}
-              </h3>
+              <Badge variant="cyan">{currentStep.chapter || `PHASE // ${currentStep.phase}`}</Badge>
+              <span className="text-xs font-mono text-ink-muted dark:text-ink-darkMuted font-bold">
+                Step {currentStepIdx + 1} of {steps.length}
+              </span>
             </div>
-            <div className="text-xs font-mono text-ink-muted dark:text-ink-darkMuted flex items-center gap-2">
-              <Clock className="w-3.5 h-3.5 text-ink-muted dark:text-ink-darkMuted" />
-              <span>Elapsed: {cumulativeLatency} ms (Estimated)</span>
+            <div className="text-xs font-mono text-cyan-700 dark:text-cyan-400 font-semibold flex items-center gap-1.5 bg-cyan-500/10 px-2.5 py-1 rounded-full border border-cyan-500/20">
+              <Clock className="w-3.5 h-3.5" />
+              <span>
+                Hop: +{currentStep.latencyMs}ms · Total: {cumulativeLatency}ms
+              </span>
             </div>
           </div>
-          <p className="text-xs sm:text-sm text-ink-light dark:text-ink-dark leading-relaxed font-sans">
-            {currentStep.explanation}
-          </p>
+
+          {/* Step Title & Story Explanation */}
+          <div className="space-y-2">
+            <h3 className="text-lg sm:text-xl font-serif font-bold text-ink-light dark:text-ink-dark tracking-tight">
+              {currentStep.title}
+            </h3>
+            <p className="text-sm sm:text-base text-ink-light dark:text-ink-dark leading-relaxed font-sans font-medium">
+              {currentStep.explanation}
+            </p>
+          </div>
+
+          {/* Callout Box & Changes Grid (Designed to Scale style) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 pt-1">
+            {/* Callout Insight Box */}
+            {currentStep.callout && (
+              <div
+                className={clsx(
+                  'p-3.5 sm:p-4 rounded-xl border flex items-start gap-3',
+                  currentStep.changes && currentStep.changes.length > 0
+                    ? 'lg:col-span-8'
+                    : 'lg:col-span-12',
+                  currentStep.callout.kind === 'insight'
+                    ? 'bg-blue-50/70 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900/60 text-blue-950 dark:text-blue-100'
+                    : currentStep.callout.kind === 'tip'
+                      ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900/60 text-emerald-950 dark:text-emerald-100'
+                      : 'bg-amber-50/70 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/60 text-amber-950 dark:text-amber-100'
+                )}
+              >
+                <div
+                  className={clsx(
+                    'p-1.5 rounded-lg shrink-0 mt-0.5',
+                    currentStep.callout.kind === 'insight'
+                      ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                      : currentStep.callout.kind === 'tip'
+                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                        : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                  )}
+                >
+                  {currentStep.callout.kind === 'insight' ? (
+                    <Lightbulb className="w-4 h-4" />
+                  ) : currentStep.callout.kind === 'tip' ? (
+                    <Sparkles className="w-4 h-4" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4" />
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[11px] font-mono font-bold tracking-wider uppercase opacity-85 block">
+                    {currentStep.callout.title ||
+                      (currentStep.callout.kind === 'insight'
+                        ? 'Key Architectural Insight'
+                        : 'Protocol Performance Tip')}
+                  </span>
+                  <p className="text-xs sm:text-sm leading-relaxed font-sans">
+                    {currentStep.callout.text}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Changes / Wire Deltas */}
+            {currentStep.changes && currentStep.changes.length > 0 && (
+              <div className="lg:col-span-4 p-3.5 rounded-xl bg-parchment-100/80 dark:bg-parchment-950/80 border border-parchment-200 dark:border-parchment-800 space-y-1.5 font-mono text-xs">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-ink-muted dark:text-ink-darkMuted block">
+                  Wire &amp; State Changes
+                </span>
+                <div className="space-y-1.5">
+                  {currentStep.changes.map((change, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-1.5 text-ink-light dark:text-ink-dark text-[11px]"
+                    >
+                      <span
+                        className={
+                          change.startsWith('+')
+                            ? 'text-emerald-500 font-bold'
+                            : 'text-cyan-500 font-bold'
+                        }
+                      >
+                        {change.slice(0, 1)}
+                      </span>
+                      <span>{change.slice(1).trim()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Packet Header Inspector Accordion */}
           {Object.keys(currentStep.packetHeaders).length > 0 && (

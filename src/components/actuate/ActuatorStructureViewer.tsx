@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Cog,
   Sliders,
@@ -240,9 +240,15 @@ const ENERGY_FLOW_STEPS = [
   },
 ];
 
-export const ActuatorStructureViewer: React.FC = () => {
+interface ActuatorStructureViewerProps {
+  tutorialAction?: { actionType: string; params: any; timestamp: number } | null;
+}
+
+export const ActuatorStructureViewer: React.FC<ActuatorStructureViewerProps> = ({
+  tutorialAction,
+}) => {
   const [activeTab, setActiveTab] = useState<
-    'exploded' | 'gearing' | 'kinematics' | 'energy' | 'foc'
+    'exploded' | 'gearing' | 'kinematics' | 'energy' | 'foc' | 'benchmarks'
   >('exploded');
   const [explodeSlider, setExplodeSlider] = useState<number>(65); // 0% assembled to 100% exploded
   const [selectedPartId, setSelectedPartId] = useState<string>('harmonic-drive');
@@ -258,6 +264,31 @@ export const ActuatorStructureViewer: React.FC = () => {
   const [motorTorqueNm, setMotorTorqueNm] = useState<number>(1.2);
   const [gearRatio, setGearRatio] = useState<number>(80);
   const [ambientTemp, setAmbientTemp] = useState<number>(25); // °C
+  const [isMotorSpinning, setIsMotorSpinning] = useState<boolean>(true);
+
+  // Apply Tutorial Action from Robotics Tutorial Deck
+  useEffect(() => {
+    if (!tutorialAction || tutorialAction.actionType !== 'actuator') return;
+    const p = tutorialAction.params;
+    if (p.tab !== undefined) setActiveTab(p.tab);
+    if (p.explode !== undefined) setExplodeSlider(p.explode);
+    if (p.part !== undefined) setSelectedPartId(p.part);
+    if (p.motorRpm !== undefined) setMotorRpm(p.motorRpm);
+    if (p.motorTorque !== undefined) setMotorTorqueNm(p.motorTorque);
+    if (p.gearRatio !== undefined) setGearRatio(p.gearRatio);
+    setIsMotorSpinning(true);
+  }, [tutorialAction]);
+
+  // Stop animations when user moves out of the browser tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setIsMotorSpinning(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
 
   // Physics Calculations:
   // Mechanical efficiency decreases slightly at extreme loads (0.85 nominal)
@@ -388,6 +419,22 @@ export const ActuatorStructureViewer: React.FC = () => {
           >
             <Activity className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
             <span>FOC &amp; SVPWM Inverter</span>
+          </button>
+
+          <button
+            onClick={() => {
+              playTick();
+              setActiveTab('benchmarks');
+            }}
+            className={clsx(
+              'btn-pop px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0',
+              activeTab === 'benchmarks'
+                ? 'bg-white dark:bg-parchment-800 text-ink-light dark:text-ink-dark font-bold shadow-xs border border-parchment-300 dark:border-parchment-700'
+                : 'text-ink-muted dark:text-ink-darkMuted hover:text-ink-light'
+            )}
+          >
+            <Compass className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span>Industrial Benchmarks</span>
           </button>
         </div>
       </div>
@@ -694,7 +741,7 @@ export const ActuatorStructureViewer: React.FC = () => {
 
                   {/* Inner Elliptical Wave Generator (Cam + Bearing) */}
                   <g
-                    className="animate-spin"
+                    className={activeTab === 'gearing' && isMotorSpinning ? 'animate-spin' : ''}
                     style={{ animationDuration: `${Math.max(0.4, 60 / (motorRpm / 20))}s` }}
                   >
                     <ellipse
@@ -776,10 +823,27 @@ export const ActuatorStructureViewer: React.FC = () => {
 
               {/* Sliders */}
               <div className="space-y-3.5 text-xs">
-                {/* Motor RPM */}
+                {/* Motor RPM & Play/Pause */}
                 <div>
                   <div className="flex justify-between items-center mb-1">
-                    <span className="text-ink-muted">Motor Speed (RPM):</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-ink-muted">Motor Speed (RPM):</span>
+                      <button
+                        onClick={() => {
+                          playTick();
+                          setIsMotorSpinning(!isMotorSpinning);
+                        }}
+                        className={clsx(
+                          'px-2 py-0.5 rounded text-[10px] font-bold border cursor-pointer transition-all',
+                          isMotorSpinning
+                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30'
+                            : 'bg-parchment-200 dark:bg-parchment-800 text-ink-muted border-parchment-300'
+                        )}
+                        title={isMotorSpinning ? 'Pause Motor' : 'Start Motor'}
+                      >
+                        {isMotorSpinning ? 'Pause' : 'Start'}
+                      </button>
+                    </div>
                     <span className="font-bold text-blue-600 dark:text-blue-400">
                       {motorRpm} RPM
                     </span>
@@ -1271,6 +1335,191 @@ export const ActuatorStructureViewer: React.FC = () => {
             </div>
           );
         })()}
+
+      {/* VIEW 6: Industrial Actuator Benchmarks & Teardown Comparison */}
+      {activeTab === 'benchmarks' && (
+        <div className="space-y-6">
+          <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono text-xs">
+            <div className="flex items-center gap-2">
+              <Compass className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span className="font-bold text-ink-light dark:text-ink-dark">
+                INDUSTRIAL ROBOTIC ACTUATOR BENCHMARK MATRIX
+              </span>
+            </div>
+            <div className="text-ink-muted">
+              Quasi-Direct Drive (QDD) vs Strain Wave (Harmonic) vs Cycloidal (RV)
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
+            {/* Actuator 1: Unitree QDD */}
+            <div className="p-5 rounded-2xl border border-parchment-200 dark:border-parchment-800 bg-white/80 dark:bg-parchment-900/80 space-y-3 shadow-xs">
+              <div className="flex justify-between items-center text-ink-muted">
+                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase">
+                  Unitree Go2 / B2
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold border border-amber-500/20">
+                  QDD
+                </span>
+              </div>
+              <h4 className="text-sm font-bold text-ink-light dark:text-ink-dark">
+                M107 Quasi-Direct Drive
+              </h4>
+              <p className="text-xs text-ink-muted dark:text-ink-darkMuted leading-relaxed font-sans">
+                Low gear ratio with high-pole-count outrunner PMSM. Low reflected inertia enables
+                high-bandwidth proprioceptive force sensing.
+              </p>
+              <div className="space-y-1.5 pt-2 border-t border-parchment-200 dark:border-parchment-800 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Gear Ratio:</span>
+                  <span className="font-bold text-amber-600 dark:text-amber-400">
+                    6.33 : 1 (Planetary)
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Peak Torque:</span>
+                  <span className="font-bold">360 Nm</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Backdrivability:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    &gt; 95% (Transparent)
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Application:</span>
+                  <span className="font-bold text-ink-muted">Quadruped dynamic jump/run</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Actuator 2: Harmonic Drive */}
+            <div className="p-5 rounded-2xl border border-parchment-200 dark:border-parchment-800 bg-white/80 dark:bg-parchment-900/80 space-y-3 shadow-xs">
+              <div className="flex justify-between items-center text-ink-muted">
+                <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase">
+                  Harmonic Drive
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-700 dark:text-purple-300 font-bold border border-purple-500/20">
+                  Strain Wave
+                </span>
+              </div>
+              <h4 className="text-sm font-bold text-ink-light dark:text-ink-dark">
+                SHA-25A Hollow Shaft Servo
+              </h4>
+              <p className="text-xs text-ink-muted dark:text-ink-darkMuted leading-relaxed font-sans">
+                Elliptical wave generator flexing a cup gear. Zero backlash with high single-stage
+                reduction in compact envelope.
+              </p>
+              <div className="space-y-1.5 pt-2 border-t border-parchment-200 dark:border-parchment-800 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Gear Ratio:</span>
+                  <span className="font-bold text-purple-600 dark:text-purple-400">
+                    100 : 1 (Cup Flex)
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Peak Torque:</span>
+                  <span className="font-bold">127 Nm</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Backlash:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    &lt; 0.1 arcmin (Zero)
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Application:</span>
+                  <span className="font-bold text-ink-muted">Cobots &amp; Surgical Robots</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Actuator 3: Tesla Optimus */}
+            <div className="p-5 rounded-2xl border border-parchment-200 dark:border-parchment-800 bg-white/80 dark:bg-parchment-900/80 space-y-3 shadow-xs">
+              <div className="flex justify-between items-center text-ink-muted">
+                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">
+                  Tesla Optimus
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold border border-blue-500/20">
+                  Compound
+                </span>
+              </div>
+              <h4 className="text-sm font-bold text-ink-light dark:text-ink-dark">
+                Gen 2 Rotary Actuator
+              </h4>
+              <p className="text-xs text-ink-muted dark:text-ink-darkMuted leading-relaxed font-sans">
+                Custom brushless frameless torque motor with dual absolute position encoders and
+                integrated cycloidal planetary stage.
+              </p>
+              <div className="space-y-1.5 pt-2 border-t border-parchment-200 dark:border-parchment-800 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Gear Ratio:</span>
+                  <span className="font-bold text-blue-600 dark:text-blue-400">
+                    28 : 1 (Compound)
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Peak Torque:</span>
+                  <span className="font-bold">180 Nm</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Torque Density:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    42 Nm / kg
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Application:</span>
+                  <span className="font-bold text-ink-muted">Humanoid hip/knee/shoulder</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Actuator 4: Nabtesco Cycloidal */}
+            <div className="p-5 rounded-2xl border border-parchment-200 dark:border-parchment-800 bg-white/80 dark:bg-parchment-900/80 space-y-3 shadow-xs">
+              <div className="flex justify-between items-center text-ink-muted">
+                <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase">
+                  Nabtesco
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 font-bold border border-cyan-500/20">
+                  Cycloidal (RV)
+                </span>
+              </div>
+              <h4 className="text-sm font-bold text-ink-light dark:text-ink-dark">
+                RV-E Heavy Industrial Drive
+              </h4>
+              <p className="text-xs text-ink-muted dark:text-ink-darkMuted leading-relaxed font-sans">
+                Dual-stage cycloidal disc pin-wheel mechanism. Absorbs extreme shock loads (500%)
+                with maximum torsional rigidity.
+              </p>
+              <div className="space-y-1.5 pt-2 border-t border-parchment-200 dark:border-parchment-800 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Gear Ratio:</span>
+                  <span className="font-bold text-cyan-600 dark:text-cyan-400">
+                    161 : 1 (Cycloid Disc)
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Peak Torque:</span>
+                  <span className="font-bold">1100 Nm</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Shock Capacity:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    500% Rated Load
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Application:</span>
+                  <span className="font-bold text-ink-muted">
+                    Heavy industrial arm base (J1/J2)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -20,9 +20,9 @@ COPY . .
 RUN npm run build
 
 # ==========================================
-# Stage 2: Production Nginx Server
+# Stage 2: Production Nginx Server (Unprivileged)
 # ==========================================
-FROM nginx:alpine-slim AS runner
+FROM nginxinc/nginx-unprivileged:alpine-slim AS runner
 
 # Copy custom Nginx configuration with SPA fallback, security headers, and gzip
 COPY nginx.conf /etc/nginx/conf.d/default.conf
@@ -30,12 +30,12 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copy production static assets from builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Expose HTTP port
-EXPOSE 80
+# Expose HTTP unprivileged port
+EXPOSE 8080
 
-# Built-in container healthcheck
+# Built-in container healthcheck targeting unprivileged port 8080
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost:80/ || exit 1
+  CMD wget --quiet --tries=1 --spider http://localhost:8080/ || exit 1
 
-# Start Nginx in foreground
+# Start Nginx in foreground as non-root user
 CMD ["nginx", "-g", "daemon off;"]

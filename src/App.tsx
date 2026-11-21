@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { StepControls } from './components/StepControls';
+import { StepExplanationCard } from './components/common/StepExplanationCard';
 import { ThreatModelCard } from './components/ThreatModelCard';
 import { LessonSidebar } from './components/LessonSidebar';
 import { DeepDiveSection } from './components/DeepDiveSection';
@@ -58,7 +59,7 @@ import { ChallengeCard } from './components/common/ChallengeCard';
 import { getSecurityMeta } from './data/securityChallenges';
 import { SecurityWorkbench } from './components/security/SecurityWorkbench';
 
-import { Sparkles, Key, Github, ShieldAlert, Server, Lock } from 'lucide-react';
+import { Sparkles, Key, CheckCircle2, ShieldAlert, Server, Lock } from 'lucide-react';
 
 export function App() {
   // Navigation State
@@ -71,6 +72,8 @@ export function App() {
     useState<ActuateModuleId>('pid-control-loop');
   const [activeSiliconModule, setActiveSiliconModule] =
     useState<SiliconModuleId>('uvm-verification');
+  const [routeStep, setRouteStep] = useState<number>(0);
+  const [actuateStep, setActuateStep] = useState<number>(0);
 
   // Systems Progress State
   const [progress, setProgress] = useState<UserProgress>(() => loadUserProgress());
@@ -119,6 +122,12 @@ export function App() {
       if (second) {
         setActiveActuateModule(second as ActuateModuleId);
       }
+      if (parts[2]) {
+        const stepNum = parseInt(parts[2], 10);
+        if (!isNaN(stepNum) && stepNum >= 1) {
+          setActuateStep(stepNum - 1);
+        }
+      }
       return;
     }
 
@@ -130,7 +139,7 @@ export function App() {
       return;
     }
 
-    // Direct module aliases like #/napkin-math/1, #/load-balancing/1 or #/request-lifecycle/1
+    // Direct module aliases like #/request-lifecycle/1, #/url-lifecycle/1, or #/napkin-math/1
     const routeModules: RouteModuleId[] = [
       'url-lifecycle',
       'tcp-congestion',
@@ -138,9 +147,9 @@ export function App() {
       'napkin-math',
     ];
     if (
+      first === 'request-lifecycle' ||
       routeModules.includes(first as RouteModuleId) ||
-      first === 'load-balancing' ||
-      first === 'request-lifecycle'
+      first === 'load-balancing'
     ) {
       setCurrentSuiteTab('route');
       setActiveRouteModule(
@@ -148,6 +157,12 @@ export function App() {
           ? 'url-lifecycle'
           : (first as RouteModuleId)
       );
+      if (second) {
+        const stepNum = parseInt(second, 10);
+        if (!isNaN(stepNum) && stepNum >= 1) {
+          setRouteStep(stepNum - 1);
+        }
+      }
       return;
     }
 
@@ -158,18 +173,32 @@ export function App() {
       return;
     }
 
-    const actuateModules: ActuateModuleId[] = [
+    const actuateModules: (ActuateModuleId | 'actuator-structure')[] = [
       'pid-control-loop',
       'ros2-teleoperation',
       'inverse-kinematics',
+      'foc-motor-control',
+      'actuator-structure',
     ];
-    if (actuateModules.includes(first as ActuateModuleId)) {
+    if (actuateModules.includes(first as any) || first === 'redundancy') {
       setCurrentSuiteTab('actuate');
-      setActiveActuateModule(first as ActuateModuleId);
+      const targetMod: ActuateModuleId =
+        first === 'redundancy' ? 'pid-control-loop' : (first as ActuateModuleId);
+      setActiveActuateModule(targetMod);
+      if (second) {
+        const stepNum = parseInt(second, 10);
+        if (!isNaN(stepNum) && stepNum >= 1) {
+          setActuateStep(stepNum - 1);
+        }
+      }
       return;
     }
 
-    const siliconModules: SiliconModuleId[] = ['uvm-verification', 'pre-silicon-emulation'];
+    const siliconModules: SiliconModuleId[] = [
+      'uvm-verification',
+      'pre-silicon-emulation',
+      'riscv-pipeline',
+    ];
     if (siliconModules.includes(first as SiliconModuleId)) {
       setCurrentSuiteTab('silicon');
       setActiveSiliconModule(first as SiliconModuleId);
@@ -196,11 +225,14 @@ export function App() {
     if (currentSuiteTab === 'security') {
       targetHash = `#/${activeLessonId}/${currentStep + 1}`;
     } else if (currentSuiteTab === 'route') {
-      targetHash = `#/route/${activeRouteModule}`;
+      targetHash =
+        activeRouteModule === 'url-lifecycle'
+          ? `#/request-lifecycle/${routeStep + 1}`
+          : `#/route/${activeRouteModule}`;
     } else if (currentSuiteTab === 'query') {
       targetHash = `#/query/${activeQueryModule}`;
     } else if (currentSuiteTab === 'actuate') {
-      targetHash = `#/actuate/${activeActuateModule}`;
+      targetHash = `#/actuate/${activeActuateModule}/${actuateStep + 1}`;
     } else if (currentSuiteTab === 'silicon') {
       targetHash = `#/silicon/${activeSiliconModule}`;
     }
@@ -212,6 +244,8 @@ export function App() {
     currentSuiteTab,
     activeLessonId,
     currentStep,
+    routeStep,
+    actuateStep,
     activeRouteModule,
     activeQueryModule,
     activeActuateModule,
@@ -286,6 +320,34 @@ export function App() {
       document.documentElement.classList.remove('dark');
     }
   }, [darkMode]);
+
+  // Handle tab visibility change: stop CSS animations, pause SMIL SVG animations, and notify app when user moves out of browser tab
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        document.body.classList.add('tab-hidden');
+        document.querySelectorAll('svg').forEach((svg) => {
+          try {
+            svg.pauseAnimations();
+          } catch {
+            // Ignore if unsupported
+          }
+        });
+      } else {
+        document.body.classList.remove('tab-hidden');
+        document.querySelectorAll('svg').forEach((svg) => {
+          try {
+            svg.unpauseAnimations();
+          } catch {
+            // Ignore if unsupported
+          }
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
 
   // Keyboard navigation for step scrubber & search modal
   const handleNext = useCallback(() => {
@@ -488,7 +550,7 @@ export function App() {
         }}
       />
 
-      {/* Course Index Curriculum Drawer (All 35 modules across Security & Systems) */}
+      {/* Security Curriculum Sidebar Drawer */}
       <LessonSidebar
         lessons={LESSONS}
         activeLessonId={activeLessonId}
@@ -496,18 +558,9 @@ export function App() {
         isOpen={isCurriculumOpen}
         onClose={() => setIsCurriculumOpen(false)}
         lang={lang}
-        currentSuiteTab={currentSuiteTab}
-        activeRouteModule={activeRouteModule}
-        activeQueryModule={activeQueryModule}
-        activeActuateModule={activeActuateModule}
-        activeSiliconModule={activeSiliconModule}
-        onSelectSystemsModule={(tab, mod) => {
-          handleNavigate(tab, mod);
-        }}
-        progress={progress}
       />
 
-      {/* Global Search Modal */}
+      {/* Global Command Palette / Search Modal (Searches across all 29 modules) */}
       <SearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
@@ -524,9 +577,9 @@ export function App() {
 
       {/* MAIN VIEW: Security Course */}
       {currentSuiteTab === 'security' && (
-        <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-fade-in">
+        <main className="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6 animate-fade-in">
           {/* Security Tracks Segmented Navigation Bar */}
-          <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto no-scrollbar shrink-0 max-w-full">
+          <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto no-scrollbar touch-scroll shrink-0 max-w-full">
             {securityTracks.map((track) => {
               const isActive = activeLesson.track === track.id;
               return (
@@ -535,7 +588,7 @@ export function App() {
                   onClick={() => {
                     handleSelectTrack(track.id);
                   }}
-                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
+                  className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-2 cursor-pointer shrink-0 whitespace-nowrap min-h-[36px] ${
                     isActive
                       ? 'bg-white dark:bg-parchment-800 text-ink-light dark:text-ink-dark font-bold shadow-sm border border-parchment-300 dark:border-parchment-700'
                       : 'text-ink-muted hover:text-ink-light dark:hover:text-ink-dark hover:bg-parchment-200/60 dark:hover:bg-parchment-800/60'
@@ -562,8 +615,8 @@ export function App() {
           </div>
 
           {/* Lesson Breadcrumb & Title */}
-          <section className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-ink-muted dark:text-ink-darkMuted">
+          <section className="space-y-2.5 sm:space-y-3">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs font-mono text-ink-muted dark:text-ink-darkMuted">
               <span className="font-semibold text-blue-600 dark:text-blue-400">
                 {activeLesson.trackTitle}
               </span>
@@ -580,7 +633,7 @@ export function App() {
               <span>Est. {activeLesson.duration}</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl font-serif font-bold text-ink-light dark:text-ink-dark tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-ink-light dark:text-ink-dark tracking-tight leading-tight">
               {activeLesson.title}
             </h1>
 
@@ -588,13 +641,13 @@ export function App() {
               {activeLesson.subtitle}
             </p>
 
-            <p className="text-sm font-sans text-ink-light dark:text-ink-dark leading-relaxed pt-1">
+            <p className="text-sm font-sans text-ink-light dark:text-ink-dark leading-relaxed pt-0.5 sm:pt-1">
               {activeLesson.summary}
             </p>
           </section>
 
           {/* Real-time Security Metrics Dashboard */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
             <MetricCard
               label="CVSS Base Score"
               value={securityMeta.cvss}
@@ -642,6 +695,14 @@ export function App() {
 
             {/* Render the visualizer state machine */}
             <div className="relative">{renderVisualizer()}</div>
+
+            {/* Step & Stage Narrative Explanation Card (Live with current step) */}
+            <StepExplanationCard
+              stepNumber={currentStep + 1}
+              totalSteps={stepCount}
+              stepData={activeStepData}
+              accentColor="security"
+            />
 
             {/* Keyboard-aware Step Controls Scrubber */}
             <StepControls
@@ -717,9 +778,11 @@ export function App() {
 
       {/* MAIN VIEW: Designed to Route (Networking Track) */}
       {currentSuiteTab === 'route' && (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-fade-in">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 animate-fade-in">
           <RouteTrackView
             initialModuleId={activeRouteModule}
+            initialStep={routeStep}
+            onStepChange={(s) => setRouteStep(s)}
             progress={progress}
             onChallengeComplete={handleChallengeComplete}
             onSelectModule={(id) => {
@@ -733,7 +796,7 @@ export function App() {
 
       {/* MAIN VIEW: Designed to Query (Database Track) */}
       {currentSuiteTab === 'query' && (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-fade-in">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 animate-fade-in">
           <QueryTrackView
             initialModuleId={activeQueryModule}
             progress={progress}
@@ -749,9 +812,11 @@ export function App() {
 
       {/* MAIN VIEW: Designed to Actuate (Robotics & Physical AI Track) */}
       {currentSuiteTab === 'actuate' && (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-fade-in">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 animate-fade-in">
           <ActuateTrackView
             initialModuleId={activeActuateModule}
+            initialStep={actuateStep}
+            onStepChange={setActuateStep}
             progress={progress}
             onChallengeComplete={handleChallengeComplete}
             onSelectModule={(id) => {
@@ -767,7 +832,7 @@ export function App() {
 
       {/* MAIN VIEW: Designed to Tapeout (VLSI & Pre-Silicon Emulation Track) */}
       {currentSuiteTab === 'silicon' && (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-fade-in">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 animate-fade-in">
           <SiliconTrackView
             initialModuleId={activeSiliconModule}
             progress={progress}
@@ -783,21 +848,57 @@ export function App() {
         </main>
       )}
 
-      {/* Platform Footer */}
-      <footer className="w-full border-t border-parchment-200 dark:border-parchment-800 bg-parchment-100/60 dark:bg-parchment-950/60 py-4 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between text-xs text-ink-muted dark:text-ink-darkMuted font-mono">
-          <span className="font-serif font-bold text-sm text-ink-light dark:text-ink-dark">
-            underthehood
-          </span>
-          <a
-            href="https://github.com/mangekyoflow/underthehood"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs text-ink-muted hover:text-ink-light dark:hover:text-ink-dark transition-colors"
-          >
-            <Github className="w-3.5 h-3.5" />
-            <span>GitHub</span>
-          </a>
+      {/* Unified Platform Footer */}
+      <footer className="w-full border-t border-parchment-200 dark:border-parchment-800 bg-parchment-100/80 dark:bg-parchment-950/80 py-6 sm:py-8 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] text-center text-xs font-mono text-ink-muted dark:text-ink-darkMuted transition-colors">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <Key className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="font-serif font-bold text-sm text-ink-light dark:text-ink-dark">
+              {t.footerTitle}
+            </span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold">
+              {t.allModulesCount}
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-[11px]">
+            <button
+              onClick={() => setCurrentSuiteTab('security')}
+              className={`hover:underline cursor-pointer ${currentSuiteTab === 'security' ? 'font-bold text-emerald-600 dark:text-emerald-400' : ''}`}
+            >
+              {t.tabSecurity} (23)
+            </button>
+            <span>•</span>
+            <button
+              onClick={() => setCurrentSuiteTab('route')}
+              className={`hover:underline cursor-pointer ${currentSuiteTab === 'route' ? 'font-bold text-cyan-600 dark:text-cyan-400' : ''}`}
+            >
+              {t.tabRoute} (4)
+            </button>
+            <span>•</span>
+            <button
+              onClick={() => setCurrentSuiteTab('query')}
+              className={`hover:underline cursor-pointer ${currentSuiteTab === 'query' ? 'font-bold text-purple-600 dark:text-purple-400' : ''}`}
+            >
+              {t.tabQuery} (3)
+            </button>
+            <span>•</span>
+            <button
+              onClick={() => setCurrentSuiteTab('actuate')}
+              className={`hover:underline cursor-pointer ${currentSuiteTab === 'actuate' ? 'font-bold text-amber-600 dark:text-amber-400' : ''}`}
+            >
+              {t.tabActuate} (3)
+            </button>
+            <span>•</span>
+            <button
+              onClick={() => setCurrentSuiteTab('silicon')}
+              className={`hover:underline cursor-pointer ${currentSuiteTab === 'silicon' ? 'font-bold text-emerald-600 dark:text-emerald-400' : ''}`}
+            >
+              {t.tabSilicon} (2)
+            </button>
+          </div>
+
+          <p className="text-[10px] text-ink-muted dark:text-ink-darkMuted">{t.builtForSystems}</p>
         </div>
       </footer>
     </div>

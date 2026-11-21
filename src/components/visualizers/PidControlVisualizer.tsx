@@ -25,6 +25,7 @@ import clsx from 'clsx';
 interface PidControlVisualizerProps {
   onChallengeComplete?: (id: string) => void;
   completedChallenges?: Record<string, boolean>;
+  tutorialAction?: { actionType: string; params: any; timestamp: number } | null;
 }
 
 interface HistoryPoint {
@@ -41,6 +42,7 @@ interface HistoryPoint {
 export const PidControlVisualizer: React.FC<PidControlVisualizerProps> = ({
   onChallengeComplete,
   completedChallenges = {},
+  tutorialAction,
 }) => {
   const moduleData = MODULES['pid-control-loop'];
 
@@ -118,6 +120,25 @@ export const PidControlVisualizer: React.FC<PidControlVisualizerProps> = ({
     setDisturbanceInjectedTime(null);
     setHistory([]);
   }, [setpoint]);
+
+  // Apply Tutorial Action from Robotics Tutorial Deck
+  useEffect(() => {
+    if (!tutorialAction || tutorialAction.actionType !== 'pid') return;
+    const p = tutorialAction.params;
+    if (p.kp !== undefined) setKp(p.kp);
+    if (p.ki !== undefined) setKi(p.ki);
+    if (p.kd !== undefined) setKd(p.kd);
+    if (p.setpoint !== undefined) setSetpoint(p.setpoint);
+    if (p.noise !== undefined) setNoiseEnabled(p.noise);
+    if (p.disturbance !== undefined && p.disturbance > 0) {
+      setDisturbanceForce(p.disturbance);
+      setDisturbanceInjectedTime(stateRef.current.time);
+      setTimeout(() => {
+        setDisturbanceForce(0);
+      }, 500);
+    }
+    setIsRunning(true);
+  }, [tutorialAction]);
 
   // Presets
   const applyPreset = (presetKp: number, presetKi: number, presetKd: number, name: string) => {
@@ -251,24 +272,34 @@ export const PidControlVisualizer: React.FC<PidControlVisualizerProps> = ({
     [disturbanceInjectedTime, onChallengeComplete, completedChallenges]
   );
 
-  // Animation frame loop
+  // Stop animation when user moves out of the browser tab
   useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setIsRunning(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
+  // Animation frame loop - only active when isRunning is true
+  useEffect(() => {
+    if (!isRunning) return;
+
     let animationFrameId: number;
     let lastTimestamp = performance.now();
 
     const loop = (now: number) => {
       const dtSec = Math.min((now - lastTimestamp) / 1000, 0.05);
       lastTimestamp = now;
-
-      if (stateRef.current.isRunning) {
-        stepSimulation(dtSec);
-      }
+      stepSimulation(dtSec);
       animationFrameId = requestAnimationFrame(loop);
     };
 
     animationFrameId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [stepSimulation]);
+  }, [isRunning, stepSimulation]);
 
   // Derived telemetry
   const currentError = setpoint - pv;

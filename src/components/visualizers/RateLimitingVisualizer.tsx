@@ -13,10 +13,11 @@ export const RateLimitingVisualizer: React.FC<Props> = ({ currentStep: _currentS
   const [lastStatus, setLastStatus] = useState<200 | 429 | null>(null);
   const [autoRefill, setAutoRefill] = useState<boolean>(true);
 
-  // Auto-refill tokens every 2 seconds
+  // Auto-refill tokens every 2 seconds - paused when tab is hidden
   useEffect(() => {
     if (!autoRefill) return;
     const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
       setTokens((prev) => Math.min(prev + 1, maxCapacity));
     }, 2000);
     return () => clearInterval(interval);

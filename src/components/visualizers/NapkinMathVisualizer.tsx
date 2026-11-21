@@ -133,6 +133,7 @@ export const NapkinMathVisualizer: React.FC<Props> = ({
     }
   }, [currentStep, onChallengeComplete, isChallengeSolved]);
 
+  // Step definitions matching designed-to-scale.vercel.app/#/napkin-math/1
   const steps: NapkinStep[] = [
     {
       short: 'The question',

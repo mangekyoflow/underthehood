@@ -1,15 +1,26 @@
 services:
-  underthehood:
+  designed-to-secure:
     build:
       context: .
       dockerfile: Dockerfile
-    image: underthehood:latest
-    container_name: underthehood-app
+    image: designed-to-secure:latest
+    container_name: designed-to-secure-app
     ports:
-      - '8080:80'
+      - '127.0.0.1:8080:8080'
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
     healthcheck:
-      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:80/']
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:8080/']
       interval: 30s
       timeout: 3s
       retries: 3

@@ -1,6 +1,6 @@
-# underthehood 🛡️ 🌐 🗄️
+# Designed to Scale Unified Suite 🛡️ 🌐 🗄️
 
-> A unified, interactive visual engineering suite combining **Cybersecurity & Cryptography**, **Internet Plumbing & Protocols**, and **Database Internals & Storage Engines**.
+> A unified, interactive visual engineering suite combining **Designed to Secure** (Cybersecurity & Cryptography), **Designed to Route** (Internet Plumbing & Packet Lifecycles), and **Designed to Query** (Database Internals & Storage Engines). Built with the craft and interactive philosophy of [Designed to Scale](https://designed-to-scale.vercel.app/).
 
 Instead of static diagrams or dry RFC documentation, this platform turns complex systems engineering concepts into **interactive, tactile state machines and live simulations**. Step through packet journeys, operate database storage engines, analyze concurrent transaction collisions, and witness real-world exploits in action.
 
@@ -120,7 +120,7 @@ Use the instant search bar in the header or press `⌘K` anywhere to search acro
 
 ```bash
 # Navigate to project
-cd /Users/akhilpasham/proyecto/underthehood
+cd /Users/akhilpasham/proyecto/designed-to-secure
 
 # Run dev server
 npm run dev

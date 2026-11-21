@@ -42,6 +42,17 @@ export const OAuthPkceVisualizer: React.FC<Props> = ({
   // Auto-play loop
   const [autoPlay, setAutoPlay] = useState<boolean>(false);
 
+  // Stop autoPlay when tab is hidden
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setAutoPlay(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
     if (autoPlay) {

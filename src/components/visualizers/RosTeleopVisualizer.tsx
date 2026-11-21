@@ -31,6 +31,7 @@ import clsx from 'clsx';
 interface RosTeleopVisualizerProps {
   onChallengeComplete?: (id: string) => void;
   completedChallenges?: Record<string, boolean>;
+  tutorialAction?: { actionType: string; params: any; timestamp: number } | null;
 }
 
 interface SimulatedRosMessage {
@@ -48,6 +49,7 @@ interface SimulatedRosMessage {
 export const RosTeleopVisualizer: React.FC<RosTeleopVisualizerProps> = ({
   onChallengeComplete,
   completedChallenges = {},
+  tutorialAction,
 }) => {
   const moduleData = MODULES['ros2-teleoperation'];
 
@@ -106,9 +108,35 @@ export const RosTeleopVisualizer: React.FC<RosTeleopVisualizerProps> = ({
     simState.current.history = historyDepth;
   }, [linearVel, angularVel, qosMode, packetLossRate, networkLatency, jitter, historyDepth]);
 
-  // Command sender loop
+  // Apply Tutorial Action from Robotics Tutorial Deck
+  useEffect(() => {
+    if (!tutorialAction || tutorialAction.actionType !== 'ros') return;
+    const p = tutorialAction.params;
+    if (p.qos !== undefined) setQosMode(p.qos);
+    if (p.loss !== undefined) setPacketLossRate(p.loss);
+    if (p.latency !== undefined) setNetworkLatency(p.latency);
+    if (p.jitter !== undefined) setJitter(p.jitter);
+    if (p.history !== undefined) setHistoryDepth(p.history);
+    if (p.lin !== undefined) setLinearVel(p.lin);
+    if (p.ang !== undefined) setAngularVel(p.ang);
+  }, [tutorialAction]);
+
+  // Stop movement when user moves out of the browser tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setLinearVel(0);
+        setAngularVel(0);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
+  // Command sender loop - pauses when document is hidden
   useEffect(() => {
     const timer = setInterval(() => {
+      if (typeof document !== 'undefined' && document.hidden) return;
       const s = simState.current;
       s.seq += 1;
       const currentSeq = s.seq;
@@ -180,11 +208,15 @@ export const RosTeleopVisualizer: React.FC<RosTeleopVisualizerProps> = ({
     return () => clearInterval(timer);
   }, []);
 
-  // Robot kinematic physics loop
+  // Robot kinematic physics loop - pauses when tab is hidden
   useEffect(() => {
     let animId: number;
 
     const loop = () => {
+      if (typeof document !== 'undefined' && document.hidden) {
+        return;
+      }
+
       const s = simState.current;
       const cmd = s.commandQueue.shift();
 
@@ -236,7 +268,19 @@ export const RosTeleopVisualizer: React.FC<RosTeleopVisualizerProps> = ({
     };
 
     animId = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(animId);
+
+    const handleVisibility = () => {
+      if (!document.hidden) {
+        cancelAnimationFrame(animId);
+        animId = requestAnimationFrame(loop);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [onChallengeComplete, completedChallenges]);
 
   // Directional buttons

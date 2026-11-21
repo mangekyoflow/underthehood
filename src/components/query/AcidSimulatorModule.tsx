@@ -57,6 +57,17 @@ export const AcidSimulatorModule: React.FC<AcidSimulatorModuleProps> = ({
   const [speed, setSpeed] = useState(1);
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
+  // Stop playback when moving out of the browser tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setIsPlaying(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
   // Compute live table rows based on executed steps up to currentStepIdx
   const { currentRows, anomalyTriggered, activeLockInfo } = React.useMemo<{
     currentRows: DatabaseRow[];

@@ -24,11 +24,13 @@ import clsx from 'clsx';
 interface InverseKinematicsVisualizerProps {
   onChallengeComplete?: (id: string) => void;
   completedChallenges?: Record<string, boolean>;
+  tutorialAction?: { actionType: string; params: any; timestamp: number } | null;
 }
 
 export const InverseKinematicsVisualizer: React.FC<InverseKinematicsVisualizerProps> = ({
   onChallengeComplete,
   completedChallenges = {},
+  tutorialAction,
 }) => {
   // Kinematic parameters (link lengths in mm)
   const [L1] = useState<number>(120);
@@ -206,10 +208,34 @@ export const InverseKinematicsVisualizer: React.FC<InverseKinematicsVisualizerPr
     J23,
   ]);
 
-  // Animation Loop for Auto Tracking or IK convergence
+  // Pause auto-tracking when user moves out of the browser tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setAutoTracking(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
+  // Apply Tutorial Action from Robotics Tutorial Deck
+  useEffect(() => {
+    if (!tutorialAction || tutorialAction.actionType !== 'ik') return;
+    const p = tutorialAction.params;
+    if (p.targetX !== undefined) setTargetX(p.targetX);
+    if (p.targetY !== undefined) setTargetY(p.targetY);
+    if (p.solver !== undefined) setSolverMode(p.solver);
+    if (p.lambda !== undefined) setDampingLambda(p.lambda);
+  }, [tutorialAction]);
+
+  // Animation Loop for Auto Tracking or IK convergence - pauses when tab is hidden
   useEffect(() => {
     let animId: number;
-    if (errorDist > 0.8 || autoTracking) {
+    if (
+      (errorDist > 0.8 || autoTracking) &&
+      (typeof document === 'undefined' || !document.hidden)
+    ) {
       animId = requestAnimationFrame(() => {
         stepIk();
       });

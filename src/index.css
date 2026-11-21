@@ -32,6 +32,7 @@
 
 body {
   margin: 0;
+  min-height: 100dvh;
   font-family:
     'Inter',
     -apple-system,
@@ -42,6 +43,55 @@ body {
   background-color: var(--bg-page);
   color: var(--text-primary);
   text-rendering: optimizeLegibility;
+  overflow-wrap: break-word;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Modern responsive text wrapping & media containment */
+h1,
+h2,
+h3,
+h4 {
+  text-wrap: balance;
+}
+
+p,
+li {
+  text-wrap: pretty;
+}
+
+:where(a, code) {
+  overflow-wrap: anywhere;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-inline-size: 100%;
+}
+
+/* Touch target sizing for touch devices (WCAG 2.5.5 / 2.5.8) */
+@media (pointer: coarse) {
+  button,
+  [role='button'],
+  select,
+  .btn-pop {
+    min-block-size: 38px;
+  }
+}
+
+/* Smooth momentum touch scrolling */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Pause all CSS keyframe animations immediately when moving out of the browser tab */
+body.tab-hidden *,
+body.animations-paused * {
+  animation-play-state: paused !important;
 }
 
 /* Custom subtle scrollbar */
@@ -121,7 +171,7 @@ body {
 }
 
 /* ==========================================================================
-   Animation & Transition Engine
+   Designed-to-Scale Animation & Transition Engine (Bret Victor philosophy)
    ========================================================================== */
 
 /* 1. Directional Step Slide Transitions */

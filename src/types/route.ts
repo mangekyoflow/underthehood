@@ -3,6 +3,7 @@ export type DnsCacheStatus = 'none' | 'browser-hit' | 'os-hit' | 'full-miss';
 export interface UrlLifecycleStep {
   id: number;
   phase: 'DNS' | 'TCP' | 'TLS' | 'HTTP' | 'RENDER';
+  chapter?: string;
   title: string;
   shortLabel: string;
   sourceNode: string;
@@ -16,6 +17,12 @@ export interface UrlLifecycleStep {
   packetHeaders: Record<string, string>;
   packetPayload?: string;
   explanation: string;
+  callout?: {
+    kind: 'insight' | 'tip' | 'warning';
+    title?: string;
+    text: string;
+  };
+  changes?: string[];
   latencyMs: number;
   isReturnTrip?: boolean;
 }

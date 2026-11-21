@@ -339,6 +339,17 @@ export const UvmTestbenchVisualizer: React.FC<UvmTestbenchVisualizerProps> = ({
     }
   }, [coveragePct, failedCount, transactions.length, onChallengeComplete, completedChallenges]);
 
+  // Stop auto-run when user moves out of the browser tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setIsRunning(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
   // Auto-run interval
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;

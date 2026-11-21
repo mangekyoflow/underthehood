@@ -132,10 +132,11 @@ export const ClockDomainCrossingVisualizer: React.FC<ClockDomainCrossingVisualiz
     }, 120);
   };
 
-  // Read consumer loop for Domain B
+  // Read consumer loop for Domain B - pauses when document is hidden
   useEffect(() => {
     const readInterval = setInterval(
       () => {
+        if (typeof document !== 'undefined' && document.hidden) return;
         setFifoEntries((prev) => {
           if (prev.length > 0) {
             setReadPtr((r) => (r + 1) % 16);
@@ -160,19 +161,39 @@ export const ClockDomainCrossingVisualizer: React.FC<ClockDomainCrossingVisualiz
     }
   }, [metastableEventsCount, synchronizer, onChallengeComplete, completedChallenges]);
 
-  // Waveform clock ticking simulation
+  // Waveform clock ticking simulation - paused when moving out of the browser tab
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCycleCount((c) => c + 1);
-      setWaveClkA((prev) => [...prev.slice(-40), cycleCount % 2]);
-      setWaveClkB((prev) => [...prev.slice(-40), Math.floor(cycleCount / 2.5) % 2]);
-      setWaveData((prev) => [
-        ...prev.slice(-40),
-        isMetastable ? 0.5 : cycleCount % 4 === 0 ? 1 : 0,
-      ]);
-    }, 80);
+    let timer: ReturnType<typeof setInterval> | null = null;
+    const startTicking = () => {
+      if (typeof document !== 'undefined' && document.hidden) return;
+      if (timer) clearInterval(timer);
+      timer = setInterval(() => {
+        if (typeof document !== 'undefined' && document.hidden) return;
+        setCycleCount((c) => c + 1);
+        setWaveClkA((prev) => [...prev.slice(-40), cycleCount % 2]);
+        setWaveClkB((prev) => [...prev.slice(-40), Math.floor(cycleCount / 2.5) % 2]);
+        setWaveData((prev) => [
+          ...prev.slice(-40),
+          isMetastable ? 0.5 : cycleCount % 4 === 0 ? 1 : 0,
+        ]);
+      }, 80);
+    };
 
-    return () => clearInterval(timer);
+    startTicking();
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        if (timer) clearInterval(timer);
+      } else {
+        startTicking();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      if (timer) clearInterval(timer);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [cycleCount, isMetastable]);
 
   // Calculated MTBF (Mean Time Between Failures)

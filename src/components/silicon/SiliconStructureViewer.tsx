@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Layers,
   Cpu,
@@ -199,7 +199,7 @@ const TAPE_OUT_STEPS = [
 
 export const SiliconStructureViewer: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
-    'die-layout' | 'cross-section' | 'cell-layout' | 'flow'
+    'die-layout' | 'cross-section' | 'cell-layout' | 'flow' | 'advanced-packaging'
   >('die-layout');
   const [selectedBlockId, setSelectedBlockId] = useState<string>('ai-core-0');
 
@@ -207,6 +207,17 @@ export const SiliconStructureViewer: React.FC = () => {
   const [ctsClockAnimation, setCtsClockAnimation] = useState<boolean>(true);
   const [thermalOverlay, setThermalOverlay] = useState<boolean>(false);
   const [gateVoltage, setGateVoltage] = useState<number>(0.75); // 0.0V to 0.9V
+
+  // Stop clock animations when user moves out of the browser tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setCtsClockAnimation(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
 
   // FinFET Transistor physics calculations
   const vth = 0.35; // Threshold voltage (V)
@@ -322,6 +333,22 @@ export const SiliconStructureViewer: React.FC = () => {
           >
             <CheckCircle2 className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
             <span>Tapeout Pipeline</span>
+          </button>
+
+          <button
+            onClick={() => {
+              playTick();
+              setActiveTab('advanced-packaging');
+            }}
+            className={clsx(
+              'btn-pop px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0',
+              activeTab === 'advanced-packaging'
+                ? 'bg-white dark:bg-parchment-800 text-ink-light dark:text-ink-dark font-bold shadow-xs border border-parchment-300 dark:border-parchment-700'
+                : 'text-ink-muted dark:text-ink-darkMuted hover:text-ink-light'
+            )}
+          >
+            <Layers className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
+            <span>2.5D/3D Chiplets &amp; HBM</span>
           </button>
         </div>
       </div>
@@ -581,7 +608,7 @@ export const SiliconStructureViewer: React.FC = () => {
                   </g>
 
                   {/* CTS Synchronized Pulse Wavefronts */}
-                  {ctsClockAnimation && (
+                  {ctsClockAnimation && activeTab === 'die-layout' && (
                     <g>
                       {/* Central Root Pulse Ring */}
                       <circle cx="240" cy="170" r="6" fill="none" stroke="#38bdf8" strokeWidth="2">
@@ -1112,7 +1139,7 @@ export const SiliconStructureViewer: React.FC = () => {
                     </text>
 
                     {/* Animated Electron Drift Particles when ON */}
-                    {isChannelConducting && (
+                    {isChannelConducting && activeTab === 'cross-section' && (
                       <>
                         <circle r="2" fill="#38bdf8">
                           <animateMotion dur="0.8s" repeatCount="indefinite">
@@ -1315,6 +1342,189 @@ export const SiliconStructureViewer: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* VIEW 5: 2.5D/3D Chiplet & Advanced Packaging Architecture */}
+      {activeTab === 'advanced-packaging' && (
+        <div className="space-y-6">
+          <div className="p-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5 dark:bg-cyan-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono text-xs">
+            <div className="flex items-center gap-2">
+              <Layers className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+              <span className="font-bold text-ink-light dark:text-ink-dark">
+                2.5D / 3D HETEROGENEOUS CHIPLET &amp; HBM3E ADVANCED PACKAGING
+              </span>
+            </div>
+            <div className="text-ink-muted">
+              CoWoS-S / CoWoS-L • Through-Silicon Vias (TSV) • Hybrid Bonding (SoIC)
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 font-mono text-xs">
+            {/* Packaging Tech 1: TSMC CoWoS */}
+            <div className="p-5 rounded-2xl border border-parchment-200 dark:border-parchment-800 bg-white/80 dark:bg-parchment-900/80 space-y-3 shadow-xs">
+              <div className="flex justify-between items-center text-ink-muted">
+                <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 uppercase">
+                  TSMC CoWoS-S / L
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 font-bold border border-cyan-500/20">
+                  2.5D Interposer
+                </span>
+              </div>
+              <h4 className="text-sm font-bold text-ink-light dark:text-ink-dark">
+                Chip-on-Wafer-on-Substrate
+              </h4>
+              <p className="text-xs text-ink-muted dark:text-ink-darkMuted leading-relaxed font-sans">
+                Full-wafer passive silicon interposer with deep trench capacitors (DTC) and dense
+                sub-micron copper redistribution lines (RDL) bridging compute and memory.
+              </p>
+              <div className="space-y-1.5 pt-2 border-t border-parchment-200 dark:border-parchment-800 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Line / Space:</span>
+                  <span className="font-bold text-cyan-600 dark:text-cyan-400">
+                    0.8 µm / 0.8 µm
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Interposer Size:</span>
+                  <span className="font-bold">Up to 3.3× Reticle limit</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Power Penalty:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    &lt; 0.5 pJ / bit
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Target IP:</span>
+                  <span className="font-bold text-ink-muted">NVIDIA Blackwell / TPU v5p</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Packaging Tech 2: HBM3e Stack */}
+            <div className="p-5 rounded-2xl border border-parchment-200 dark:border-parchment-800 bg-white/80 dark:bg-parchment-900/80 space-y-3 shadow-xs">
+              <div className="flex justify-between items-center text-ink-muted">
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">
+                  HBM3e Memory Cube
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-500/20">
+                  3D DRAM Stack
+                </span>
+              </div>
+              <h4 className="text-sm font-bold text-ink-light dark:text-ink-dark">
+                12-High TSV DRAM Stack
+              </h4>
+              <p className="text-xs text-ink-muted dark:text-ink-darkMuted leading-relaxed font-sans">
+                Twelve DRAM silicon dies thinned down to 40 µm, interconnected by over 5,000
+                Through-Silicon Vias (TSVs) over an active base logic controller die.
+              </p>
+              <div className="space-y-1.5 pt-2 border-t border-parchment-200 dark:border-parchment-800 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Bandwidth / Stack:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    1.2 TB / s
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Bus Width:</span>
+                  <span className="font-bold">1024-bit wide interface</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Microbump Pitch:</span>
+                  <span className="font-bold text-cyan-600 dark:text-cyan-400">
+                    35 µm solder bump
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Capacity:</span>
+                  <span className="font-bold text-ink-muted">36 GB per 12-Hi stack</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Packaging Tech 3: Intel EMIB */}
+            <div className="p-5 rounded-2xl border border-parchment-200 dark:border-parchment-800 bg-white/80 dark:bg-parchment-900/80 space-y-3 shadow-xs">
+              <div className="flex justify-between items-center text-ink-muted">
+                <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">
+                  Intel EMIB
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold border border-blue-500/20">
+                  Embedded Bridge
+                </span>
+              </div>
+              <h4 className="text-sm font-bold text-ink-light dark:text-ink-dark">
+                Embedded Multi-Die Interconnect
+              </h4>
+              <p className="text-xs text-ink-muted dark:text-ink-darkMuted leading-relaxed font-sans">
+                Tiny silicon bridge chips embedded directly inside standard organic package
+                substrate cavity, bridging chiplet edges without expensive full interposers.
+              </p>
+              <div className="space-y-1.5 pt-2 border-t border-parchment-200 dark:border-parchment-800 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Bump Pitch:</span>
+                  <span className="font-bold text-blue-600 dark:text-blue-400">55 µm ➔ 45 µm</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Package Yield:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    Higher than CoWoS
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Warpage Risk:</span>
+                  <span className="font-bold">Low (No large interposer)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Target IP:</span>
+                  <span className="font-bold text-ink-muted">Intel Xeon / Gaudi AI</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Packaging Tech 4: Direct Hybrid Bonding */}
+            <div className="p-5 rounded-2xl border border-parchment-200 dark:border-parchment-800 bg-white/80 dark:bg-parchment-900/80 space-y-3 shadow-xs">
+              <div className="flex justify-between items-center text-ink-muted">
+                <span className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase">
+                  Hybrid Bonding (SoIC)
+                </span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-700 dark:text-purple-300 font-bold border border-purple-500/20">
+                  True 3D Wafer-on-Wafer
+                </span>
+              </div>
+              <h4 className="text-sm font-bold text-ink-light dark:text-ink-dark">
+                Direct Copper-to-Copper (Cu-Cu)
+              </h4>
+              <p className="text-xs text-ink-muted dark:text-ink-darkMuted leading-relaxed font-sans">
+                Solderless direct atomic bonding of copper pads and dielectric interface at room
+                temperature, eliminating solder microbumps completely.
+              </p>
+              <div className="space-y-1.5 pt-2 border-t border-parchment-200 dark:border-parchment-800 text-[11px]">
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Pad Pitch:</span>
+                  <span className="font-bold text-purple-600 dark:text-purple-400">
+                    &lt; 1 µm (Sub-micron)
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Density Gain:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    10,000× vs Microbumps
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Parasitics:</span>
+                  <span className="font-bold text-cyan-600 dark:text-cyan-400">
+                    &lt; 0.1 fF capacitance
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-ink-muted">Target IP:</span>
+                  <span className="font-bold text-ink-muted">AMD 3D V-Cache (SRAM stack)</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

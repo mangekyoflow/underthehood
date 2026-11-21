@@ -143,6 +143,17 @@ export const HttpRaceModule: React.FC<HttpRaceModuleProps> = ({
     onChallengeComplete('challenge-http-2');
   };
 
+  // Stop race when moving out of the browser tab
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setIsPlaying(false);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
   // Simulation tick loop
   useEffect(() => {
     let timer: ReturnType<typeof setInterval> | null = null;
