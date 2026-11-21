@@ -43,7 +43,7 @@ export function playTick(): void {
     gain.connect(ctx.destination);
     osc.start();
     osc.stop(ctx.currentTime + 0.03);
-  } catch (e) {
+  } catch {
     // Ignore audio context errors
   }
 }
@@ -66,7 +66,7 @@ export function playSuccess(): void {
       osc.start(now + i * 0.08);
       osc.stop(now + i * 0.08 + 0.25);
     });
-  } catch (e) {
+  } catch {
     // Ignore audio context errors
   }
 }
@@ -88,7 +88,7 @@ export function playAlert(): void {
     gain.connect(ctx.destination);
     osc.start(now);
     osc.stop(now + 0.12);
-  } catch (e) {
+  } catch {
     // Ignore audio context errors
   }
 }

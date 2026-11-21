@@ -3,21 +3,13 @@ import {
   ShieldCheck,
   ShieldAlert,
   User,
-  RefreshCw,
   Lock,
-  Terminal,
-  ArrowRight,
   Database,
   Server,
-  Globe,
-  AlertTriangle,
-  CheckCircle2,
   Play,
   Pause,
   RotateCcw,
   Send,
-  Key,
-  Sparkles,
   Radio,
 } from 'lucide-react';
 import { MetricCard } from '../common/MetricCard';
@@ -27,6 +19,65 @@ import clsx from 'clsx';
 interface Props {
   currentStep?: number;
   onSelectStep?: (step: number) => void;
+}
+
+const ATTACKER_FIXED_ID = 'sess_attacker_trap_9901';
+const REGENERATED_ID = 'sess_fresh_random_4481_xK8';
+
+function getSessionStepsData(fixationDefense: boolean, isAttackerSuccessful: boolean) {
+  return [
+    {
+      title: 'Step 1: Attacker Plants Trap Session ID',
+      detail:
+        'Attacker creates an anonymous session and tricks the victim into using it via phishing link or cookie injection (?PHPSESSID=sess_attacker_trap_9901).',
+      source: 'Attacker Node',
+      target: 'Victim Browser',
+      payload: `Set-Cookie: PHPSESSID=${ATTACKER_FIXED_ID}`,
+      badge: 'Trap Cookie Planted',
+    },
+    {
+      title: 'Step 2: Victim Navigates & Logs In',
+      detail:
+        'Victim visits the real application and enters credentials. The browser sends the existing ambient trap cookie along with login credentials.',
+      source: 'Victim Browser',
+      target: 'App Web Server',
+      payload: `POST /login { user, pass } + Cookie: ${ATTACKER_FIXED_ID}`,
+      badge: 'Credentials Submitted',
+    },
+    {
+      title: 'Step 3: Session ID Regeneration Boundary',
+      detail: fixationDefense
+        ? 'SECURE: session_regenerate_id(true) destroys the trap cookie and issues a fresh, cryptographically random ID!'
+        : 'VULNERABLE: Server leaves the trap ID unchanged and simply flags it as authenticated in memory!',
+      source: 'App Web Server',
+      target: 'Session Manager',
+      payload: fixationDefense
+        ? `ROTATE -> ${REGENERATED_ID}`
+        : `RETAIN TRAP -> ${ATTACKER_FIXED_ID}`,
+      badge: fixationDefense ? 'Cookie Rotated ✓' : 'Trap Retained ⚠',
+    },
+    {
+      title: 'Step 4: Session State Bound in Redis',
+      detail:
+        'The authenticated user identity (UID #8492) is saved to the persistent in-memory session database under the active session key.',
+      source: 'App Web Server',
+      target: 'Redis Session Store',
+      payload: `SET session:${fixationDefense ? REGENERATED_ID.substring(0, 14) : ATTACKER_FIXED_ID.substring(0, 14)} { uid: 8492 }`,
+      badge: 'Redis Store Bound',
+    },
+    {
+      title: 'Step 5: Attacker Probes with Trap Cookie',
+      detail: isAttackerSuccessful
+        ? 'CRITICAL HIJACK: Attacker queries /account using the trap cookie. Server finds it authenticated! Attacker takes over account!'
+        : 'HIJACK PREVENTED: Attacker queries with the old trap cookie, but it was destroyed during rotation! Server responds 401 Unauthorized.',
+      source: 'Attacker Node',
+      target: 'App Web Server',
+      payload: isAttackerSuccessful
+        ? 'GET /account + Cookie: trap -> 200 HIJACKED'
+        : 'GET /account + Cookie: trap -> 401 REJECTED',
+      badge: isAttackerSuccessful ? 'Session Hijacked' : 'Hijack Defeated',
+    },
+  ];
 }
 
 export const SessionManagementVisualizer: React.FC<Props> = ({
@@ -44,70 +95,17 @@ export const SessionManagementVisualizer: React.FC<Props> = ({
   const [autoPlay, setAutoPlay] = useState<boolean>(false);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
 
-  const attackerFixedId = 'sess_attacker_trap_9901';
-  const regeneratedId = 'sess_fresh_random_4481_xK8';
-
   const currentVictimSessionId =
     sessionPhase === 'pre_login'
-      ? attackerFixedId
+      ? ATTACKER_FIXED_ID
       : fixationDefense
-        ? regeneratedId
-        : attackerFixedId;
+        ? REGENERATED_ID
+        : ATTACKER_FIXED_ID;
 
   const isAttackerSuccessful =
     (sessionPhase === 'attacker_tested' || currentStep === 4) && !fixationDefense;
 
-  const stepsData = [
-    {
-      title: 'Step 1: Attacker Plants Trap Session ID',
-      detail:
-        'Attacker creates an anonymous session and tricks the victim into using it via phishing link or cookie injection (?PHPSESSID=sess_attacker_trap_9901).',
-      source: 'Attacker Node',
-      target: 'Victim Browser',
-      payload: `Set-Cookie: PHPSESSID=${attackerFixedId}`,
-      badge: 'Trap Cookie Planted',
-    },
-    {
-      title: 'Step 2: Victim Navigates & Logs In',
-      detail:
-        'Victim visits the real application and enters credentials. The browser sends the existing ambient trap cookie along with login credentials.',
-      source: 'Victim Browser',
-      target: 'App Web Server',
-      payload: `POST /login { user, pass } + Cookie: ${attackerFixedId}`,
-      badge: 'Credentials Submitted',
-    },
-    {
-      title: 'Step 3: Session ID Regeneration Boundary',
-      detail: fixationDefense
-        ? 'SECURE: session_regenerate_id(true) destroys the trap cookie and issues a fresh, cryptographically random ID!'
-        : 'VULNERABLE: Server leaves the trap ID unchanged and simply flags it as authenticated in memory!',
-      source: 'App Web Server',
-      target: 'Session Manager',
-      payload: fixationDefense ? `ROTATE -> ${regeneratedId}` : `RETAIN TRAP -> ${attackerFixedId}`,
-      badge: fixationDefense ? 'Cookie Rotated ✓' : 'Trap Retained ⚠',
-    },
-    {
-      title: 'Step 4: Session State Bound in Redis',
-      detail:
-        'The authenticated user identity (UID #8492) is saved to the persistent in-memory session database under the active session key.',
-      source: 'App Web Server',
-      target: 'Redis Session Store',
-      payload: `SET session:${fixationDefense ? regeneratedId.substring(0, 14) : attackerFixedId.substring(0, 14)} { uid: 8492 }`,
-      badge: 'Redis Store Bound',
-    },
-    {
-      title: 'Step 5: Attacker Probes with Trap Cookie',
-      detail: isAttackerSuccessful
-        ? 'CRITICAL HIJACK: Attacker queries /account using the trap cookie. Server finds it authenticated! Attacker takes over account!'
-        : 'HIJACK PREVENTED: Attacker queries with the old trap cookie, but it was destroyed during rotation! Server responds 401 Unauthorized.',
-      source: 'Attacker Node',
-      target: 'App Web Server',
-      payload: isAttackerSuccessful
-        ? 'GET /account + Cookie: trap -> 200 HIJACKED'
-        : 'GET /account + Cookie: trap -> 401 REJECTED',
-      badge: isAttackerSuccessful ? 'Session Hijacked' : 'Hijack Defeated',
-    },
-  ];
+  const stepsData = getSessionStepsData(fixationDefense, isAttackerSuccessful);
 
   const activeStep = stepsData[currentStep] || stepsData[0];
 
@@ -335,7 +333,7 @@ export const SessionManagementVisualizer: React.FC<Props> = ({
         />
         <MetricCard
           label="Attacker Known Cookie"
-          value={attackerFixedId.substring(0, 14) + '...'}
+          value={ATTACKER_FIXED_ID.substring(0, 14) + '...'}
           variant="purple"
           trend="neutral"
           description="Cookie Seeded by Attacker"

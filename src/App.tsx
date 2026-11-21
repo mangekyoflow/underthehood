@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Header } from './components/Header';
 import { StepControls } from './components/StepControls';
 import { StepExplanationCard } from './components/common/StepExplanationCard';
@@ -59,7 +59,21 @@ import { ChallengeCard } from './components/common/ChallengeCard';
 import { getSecurityMeta } from './data/securityChallenges';
 import { SecurityWorkbench } from './components/security/SecurityWorkbench';
 
-import { Sparkles, Key, CheckCircle2, ShieldAlert, Server, Lock } from 'lucide-react';
+import { Sparkles, Key, ShieldAlert, Server, Lock } from 'lucide-react';
+
+interface SecurityTrackDef {
+  id: SecurityTrackId;
+  labelKey: 'trackAuth' | 'trackExploits' | 'trackArch' | 'trackCrypto';
+  count: number;
+  icon: typeof Key;
+}
+
+const SECURITY_TRACK_DEFINITIONS: readonly SecurityTrackDef[] = [
+  { id: 'auth', labelKey: 'trackAuth', count: 5, icon: Key },
+  { id: 'exploits', labelKey: 'trackExploits', count: 8, icon: ShieldAlert },
+  { id: 'architecture', labelKey: 'trackArch', count: 6, icon: Server },
+  { id: 'crypto', labelKey: 'trackCrypto', count: 4, icon: Lock },
+] as const;
 
 export function App() {
   // Navigation State
@@ -278,7 +292,7 @@ export function App() {
       timestamp: timeStr,
     }));
     setSecurityLogs(initialWithIds);
-  }, [activeLesson.id]);
+  }, [activeLesson.id, securityMeta.initialLogs]);
 
   // Append audit event on step change
   useEffect(() => {
@@ -511,22 +525,16 @@ export function App() {
     }
   };
 
-  const securityTracks: {
-    id: SecurityTrackId;
-    label: string;
-    count: number;
-    icon: React.ReactNode;
-  }[] = [
-    { id: 'auth', label: t.trackAuth, count: 5, icon: <Key className="w-3.5 h-3.5" /> },
-    {
-      id: 'exploits',
-      label: t.trackExploits,
-      count: 8,
-      icon: <ShieldAlert className="w-3.5 h-3.5" />,
-    },
-    { id: 'architecture', label: t.trackArch, count: 6, icon: <Server className="w-3.5 h-3.5" /> },
-    { id: 'crypto', label: t.trackCrypto, count: 4, icon: <Lock className="w-3.5 h-3.5" /> },
-  ];
+  const securityTracks = useMemo(
+    () =>
+      SECURITY_TRACK_DEFINITIONS.map((def: (typeof SECURITY_TRACK_DEFINITIONS)[number]) => ({
+        id: def.id,
+        label: t[def.labelKey],
+        count: def.count,
+        icon: <def.icon className="w-3.5 h-3.5" />,
+      })),
+    [t]
+  );
 
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-blue-500/20 selection:text-blue-900 dark:selection:text-blue-100">

@@ -4,17 +4,12 @@ import {
   ShieldAlert,
   ShieldCheck,
   Lock,
-  Unlock,
   Server,
-  ArrowRight,
   AlertTriangle,
-  CheckCircle2,
   Play,
   Pause,
   RotateCcw,
   Send,
-  Sparkles,
-  Key,
   Radio,
   Database,
 } from 'lucide-react';
@@ -26,6 +21,45 @@ interface Props {
   currentStep?: number;
   onSelectStep?: (step: number) => void;
 }
+
+const ZERO_TRUST_STEPS = [
+  {
+    title: 'Step 1: The Flaw of Castle-and-Moat Security',
+    detail:
+      'Traditional networks trust all internal traffic behind the perimeter firewall. If a worker is compromised, an attacker moves laterally unimpeded over plain HTTP.',
+    source: 'Ingress Firewall',
+    target: 'Internal Subnet',
+    payload: 'Perimeter Boundary: External filtered, Internal unrestricted',
+    badge: 'Castle & Moat Flaw',
+  },
+  {
+    title: 'Step 2: Explicit Verification & SPIFFE Cryptographic Identity',
+    detail:
+      'Zero Trust eliminates IP-based trust. Every service receives a short-lived X.509 certificate with a cryptographic SPIFFE ID (e.g. spiffe://cluster/sa/orders).',
+    source: 'SPIRE Authority',
+    target: 'Service Pod Sidecars',
+    payload: 'X.509 SVID Issued: spiffe://cluster.local/ns/prod/sa/orders',
+    badge: 'SPIFFE Identity Issued',
+  },
+  {
+    title: 'Step 3: Mutual TLS (mTLS) Handshake Between Services',
+    detail:
+      'Both services authenticate each other. The client verifies the server’s identity, and the server verifies the client’s identity. Traffic is encrypted in transit.',
+    source: 'Orders Envoy Sidecar',
+    target: 'Payments Envoy Sidecar',
+    payload: 'Two-Way TLS Handshake: Mutual SAN Certs Exchanged + Encrypted',
+    badge: 'mTLS Handshake Verified',
+  },
+  {
+    title: 'Step 4: Fine-Grained Layer 7 Authorization Policy',
+    detail:
+      'The Payments Envoy proxy checks its AuthorizationPolicy: ALLOW IF Caller == spiffe://.../orders. The compromised analytics worker is denied with 403 Forbidden!',
+    source: 'Envoy Policy Engine',
+    target: 'Payments API Port',
+    payload: 'ALLOW orders -> /charges | DENY analytics -> 403 FORBIDDEN',
+    badge: 'Microsegmentation Enforced',
+  },
+] as const;
 
 export const ZeroTrustVisualizer: React.FC<Props> = ({
   currentStep: externalStep,
@@ -47,47 +81,8 @@ export const ZeroTrustVisualizer: React.FC<Props> = ({
     architecture === 'perimeter' &&
     analyticsCompromised &&
     (activeTrafficSource === 'analytics' || currentStep === 0);
-  const isZeroTrustProtected =
-    architecture === 'zerotrust' && (activeTrafficSource === 'analytics' || currentStep >= 2);
 
-  const stepsData = [
-    {
-      title: 'Step 1: The Flaw of Castle-and-Moat Security',
-      detail:
-        'Traditional networks trust all internal traffic behind the perimeter firewall. If a worker is compromised, an attacker moves laterally unimpeded over plain HTTP.',
-      source: 'Ingress Firewall',
-      target: 'Internal Subnet',
-      payload: 'Perimeter Boundary: External filtered, Internal unrestricted',
-      badge: 'Castle & Moat Flaw',
-    },
-    {
-      title: 'Step 2: Explicit Verification & SPIFFE Cryptographic Identity',
-      detail:
-        'Zero Trust eliminates IP-based trust. Every service receives a short-lived X.509 certificate with a cryptographic SPIFFE ID (e.g. spiffe://cluster/sa/orders).',
-      source: 'SPIRE Authority',
-      target: 'Service Pod Sidecars',
-      payload: 'X.509 SVID Issued: spiffe://cluster.local/ns/prod/sa/orders',
-      badge: 'SPIFFE Identity Issued',
-    },
-    {
-      title: 'Step 3: Mutual TLS (mTLS) Handshake Between Services',
-      detail:
-        'Both services authenticate each other. The client verifies the server’s identity, and the server verifies the client’s identity. Traffic is encrypted in transit.',
-      source: 'Orders Envoy Sidecar',
-      target: 'Payments Envoy Sidecar',
-      payload: 'Two-Way TLS Handshake: Mutual SAN Certs Exchanged + Encrypted',
-      badge: 'mTLS Handshake Verified',
-    },
-    {
-      title: 'Step 4: Fine-Grained Layer 7 Authorization Policy',
-      detail:
-        'The Payments Envoy proxy checks its AuthorizationPolicy: ALLOW IF Caller == spiffe://.../orders. The compromised analytics worker is denied with 403 Forbidden!',
-      source: 'Envoy Policy Engine',
-      target: 'Payments API Port',
-      payload: 'ALLOW orders -> /charges | DENY analytics -> 403 FORBIDDEN',
-      badge: 'Microsegmentation Enforced',
-    },
-  ];
+  const stepsData = ZERO_TRUST_STEPS;
 
   const activeStep = stepsData[currentStep] || stepsData[0];
 

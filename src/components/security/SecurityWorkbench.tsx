@@ -8,9 +8,6 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
-  Terminal,
-  ShieldAlert,
-  Cpu,
 } from 'lucide-react';
 import { SecurityAttackConsole } from './SecurityAttackConsole';
 import { CvssCalculator } from './CvssCalculator';
@@ -18,7 +15,6 @@ import { SecurityHeadersAuditor } from './SecurityHeadersAuditor';
 import { PasswordEntropyBenchmark } from './PasswordEntropyBenchmark';
 import { SecurityCertificationQuiz } from './SecurityCertificationQuiz';
 import { LogEntry } from '../common/TerminalLog';
-import { Badge } from '../common/Badge';
 import { playTick } from '../../lib/sound';
 import clsx from 'clsx';
 

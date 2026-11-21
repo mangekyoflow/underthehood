@@ -263,7 +263,13 @@ export const HttpRaceModule: React.FC<HttpRaceModuleProps> = ({
       playSuccess();
       onChallengeComplete('challenge-http-2');
     }
-  }, [h1State.isFinished, h2State.isFinished, h3State.isFinished, raceFinished]);
+  }, [
+    h1State.isFinished,
+    h2State.isFinished,
+    h3State.isFinished,
+    raceFinished,
+    onChallengeComplete,
+  ]);
 
   // Render Protocol Lane Component
   const renderLane = (lane: HttpLaneState, accent: 'cyan' | 'purple' | 'amber') => {

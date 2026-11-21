@@ -1,31 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import {
-  ShieldAlert,
-  ShieldCheck,
-  Play,
-  Pause,
-  RotateCcw,
-  ChevronRight,
-  ChevronLeft,
-  Database,
-  Lock,
-  Unlock,
-  AlertTriangle,
-  CheckCircle2,
-  User,
-  HelpCircle,
-  Layers,
-  ArrowRight,
-  GitPullRequest,
-  RefreshCw,
-  AlertCircle,
-} from 'lucide-react';
+import { ShieldAlert, ShieldCheck, Database, Lock, AlertCircle } from 'lucide-react';
 import { MODULES } from '../../data/modulesData';
 import { IsolationLevel, AnomalyScenarioId, DatabaseRow } from '../../types/query';
 import { SCENARIOS } from './AcidEngine';
 import { AcidConcurrencyCanvas } from './AcidConcurrencyCanvas';
 import { SimulationControls } from '../common/SimulationControls';
-import { MetricCard } from '../common/MetricCard';
 import { Badge } from '../common/Badge';
 import { ExplanationDrawer } from '../common/ExplanationDrawer';
 import { ChallengeCard } from '../common/ChallengeCard';
@@ -165,7 +144,7 @@ export const AcidSimulatorModule: React.FC<AcidSimulatorModuleProps> = ({
     ) {
       onChallengeComplete('challenge-acid-2');
     }
-  }, [currentStepIdx, currentScenario, isolationLevel, selectedScenarioId]);
+  }, [currentStepIdx, currentScenario, isolationLevel, onChallengeComplete, selectedScenarioId]);
 
   // Playback timer
   useEffect(() => {

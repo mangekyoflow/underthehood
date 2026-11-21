@@ -1,13 +1,6 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React from 'react';
 import { BPlusNode } from '../../types/query';
-import {
-  ArrowRight,
-  Link as LinkIcon,
-  Compass,
-  Sparkles,
-  Binary,
-  CheckCircle2,
-} from 'lucide-react';
+import { ArrowRight, Link as LinkIcon } from 'lucide-react';
 import clsx from 'clsx';
 
 interface BPlusTreeVisualizerProps {
@@ -18,16 +11,6 @@ interface BPlusTreeVisualizerProps {
   maxCapacity: number;
 }
 
-interface NodeLayout {
-  node: BPlusNode;
-  level: number;
-  colIndex: number;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 export const BPlusTreeVisualizer: React.FC<BPlusTreeVisualizerProps> = ({
   root,
   activePath,
@@ -35,9 +18,6 @@ export const BPlusTreeVisualizer: React.FC<BPlusTreeVisualizerProps> = ({
   highlightedKey,
   maxCapacity,
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 800, height: 420 });
-
   if (!root) {
     return (
       <div className="h-64 flex flex-col items-center justify-center font-mono text-xs text-ink-muted dark:text-ink-darkMuted gap-2 border border-parchment-200 dark:border-parchment-800 rounded-2xl bg-white/80 dark:bg-parchment-900/80 shadow-xs">
@@ -167,7 +147,6 @@ export const BPlusTreeVisualizer: React.FC<BPlusTreeVisualizerProps> = ({
 
             {/* Tree Branch Edges */}
             {branches.map((b) => {
-              const dx = b.to.x - b.from.x;
               const dy = b.to.y - b.from.y;
               const pathD = `M ${b.from.x} ${b.from.y} C ${b.from.x} ${b.from.y + dy * 0.5}, ${b.to.x} ${b.to.y - dy * 0.5}, ${b.to.x} ${b.to.y}`;
 

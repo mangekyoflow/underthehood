@@ -6,7 +6,7 @@ import { RiscvPipelineVisualizer } from '../visualizers/RiscvPipelineVisualizer'
 import { SiliconStructureViewer } from './SiliconStructureViewer';
 import { Badge } from '../common/Badge';
 import { playTick } from '../../lib/sound';
-import { Layers, Cpu, Sparkles } from 'lucide-react';
+import { Layers } from 'lucide-react';
 import clsx from 'clsx';
 
 interface SiliconTrackViewProps {
@@ -15,6 +15,27 @@ interface SiliconTrackViewProps {
   onChallengeComplete: (id: string) => void;
   onSelectModule?: (id: SiliconModuleId | 'silicon-structure') => void;
 }
+
+const SILICON_MODULES = [
+  {
+    id: 'uvm-verification' as SiliconModuleId,
+    num: '11',
+    title: 'UVM & Cocotb Verification',
+    desc: 'Constrained-random testbench & functional coverage',
+  },
+  {
+    id: 'pre-silicon-emulation' as SiliconModuleId,
+    num: '12',
+    title: 'Pre-Silicon Emulation & CDC',
+    desc: 'Clock domain crossing, metastability & async FIFOs',
+  },
+  {
+    id: 'riscv-pipeline' as SiliconModuleId,
+    num: '13',
+    title: 'RISC-V 5-Stage Pipeline',
+    desc: 'Data hazards, forwarding unit & bubble stalls',
+  },
+] as const;
 
 export const SiliconTrackView: React.FC<SiliconTrackViewProps> = ({
   initialModuleId = 'uvm-verification',
@@ -30,28 +51,7 @@ export const SiliconTrackView: React.FC<SiliconTrackViewProps> = ({
     if (initialModuleId && initialModuleId !== activeView) {
       setActiveView(initialModuleId);
     }
-  }, [initialModuleId]);
-
-  const modules = [
-    {
-      id: 'uvm-verification' as SiliconModuleId,
-      num: '11',
-      title: 'UVM & Cocotb Verification',
-      desc: 'Constrained-random testbench & functional coverage',
-    },
-    {
-      id: 'pre-silicon-emulation' as SiliconModuleId,
-      num: '12',
-      title: 'Pre-Silicon Emulation & CDC',
-      desc: 'Clock domain crossing, metastability & async FIFOs',
-    },
-    {
-      id: 'riscv-pipeline' as SiliconModuleId,
-      num: '13',
-      title: 'RISC-V 5-Stage Pipeline',
-      desc: 'Data hazards, forwarding unit & bubble stalls',
-    },
-  ];
+  }, [initialModuleId, activeView]);
 
   const handleSelectModule = (id: SiliconModuleId) => {
     playTick();
@@ -88,7 +88,7 @@ export const SiliconTrackView: React.FC<SiliconTrackViewProps> = ({
 
         {/* Submodule Segmented Pills */}
         <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto touch-scroll no-scrollbar max-w-full shrink-0">
-          {modules.map((m) => {
+          {SILICON_MODULES.map((m) => {
             const isActive = activeView === m.id;
             return (
               <button

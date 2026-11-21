@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Play,
   Pause,
@@ -6,13 +6,9 @@ import {
   SkipForward,
   Cpu,
   Layers,
-  ArrowRight,
   ShieldAlert,
   ShieldCheck,
-  CheckCircle2,
   AlertTriangle,
-  Info,
-  Sliders,
   Terminal,
   Activity,
   Binary,
@@ -152,7 +148,7 @@ export const RiscvPipelineVisualizer: React.FC<RiscvPipelineVisualizerProps> = (
   const [cycle, setCycle] = useState<number>(1);
   const [pcIndex, setPcIndex] = useState<number>(0);
   const [isRunning, setIsRunning] = useState<boolean>(false);
-  const [clockSpeedHz, setClockSpeedHz] = useState<number>(2);
+  const [clockSpeedHz] = useState<number>(2);
 
   // Hardware Pipeline Stages (IF, ID, EX, MEM, WB)
   const [ifReg, setIfReg] = useState<PipelineRegisterState>({ pc: 0x100, inst: program[0] });

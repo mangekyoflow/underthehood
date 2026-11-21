@@ -1,17 +1,5 @@
 import React, { useState } from 'react';
-import {
-  ShieldCheck,
-  ShieldAlert,
-  Check,
-  Copy,
-  RotateCcw,
-  AlertTriangle,
-  Terminal,
-  Server,
-  Globe,
-  FileCode2,
-} from 'lucide-react';
-import { Badge } from '../common/Badge';
+import { ShieldCheck, ShieldAlert, Check, Copy, FileCode2 } from 'lucide-react';
 import { playTick, playSuccess } from '../../lib/sound';
 import clsx from 'clsx';
 

@@ -5,43 +5,42 @@ interface Props {
   currentStep: number;
 }
 
+const REDIRECT_PRESETS: Record<string, { label: string; url: string; description: string }> = {
+  legit: {
+    label: 'Legitimate Relative Path (/dashboard)',
+    url: '/dashboard',
+    description: 'Internal authenticated user dashboard',
+  },
+  external: {
+    label: 'Direct External Domain (https://evil-phish.com)',
+    url: 'https://evil-phish.com/harvest',
+    description: 'Phishing website disguised as trusted login redirect',
+  },
+  protocol_relative: {
+    label: 'Protocol-Relative Bypass (//evil-phish.com)',
+    url: '//evil-phish.com/callback',
+    description: 'Browser inherits scheme and navigates to external origin',
+  },
+  backslash: {
+    label: 'Backslash Bypass (/\\evil-phish.com)',
+    url: '/\\evil-phish.com',
+    description: 'Legacy browsers treat backslash as domain separator',
+  },
+};
+
 export const OpenRedirectVisualizer: React.FC<Props> = ({ currentStep: _currentStep }) => {
   const [selectedPreset, setSelectedPreset] = useState<string>('external');
   const [validationMode, setValidationMode] = useState<'vulnerable' | 'hardened'>('hardened');
 
-  const presets: Record<string, { label: string; url: string; description: string }> = {
-    legit: {
-      label: 'Legitimate Relative Path (/dashboard)',
-      url: '/dashboard',
-      description: 'Internal authenticated user dashboard',
-    },
-    external: {
-      label: 'Direct External Domain (https://evil-phish.com)',
-      url: 'https://evil-phish.com/harvest',
-      description: 'Phishing website disguised as trusted login redirect',
-    },
-    protocol_relative: {
-      label: 'Protocol-Relative Bypass (//evil-phish.com)',
-      url: '//evil-phish.com/callback',
-      description: 'Browser inherits scheme and navigates to external origin',
-    },
-    backslash: {
-      label: 'Backslash Bypass (/\\evil-phish.com)',
-      url: '/\\evil-phish.com',
-      description: 'Legacy browsers treat backslash as domain separator',
-    },
-  };
-
-  const currentPayload = presets[selectedPreset];
+  const currentPayload = REDIRECT_PRESETS[selectedPreset];
   const isMalicious = selectedPreset !== 'legit';
 
   // Evaluate redirection destination
-  let finalDestinationUrl = '/dashboard';
-  let isPhished = false;
+  let finalDestinationUrl: string;
+  const isPhished = validationMode === 'vulnerable' ? isMalicious : false;
 
   if (validationMode === 'vulnerable') {
     finalDestinationUrl = currentPayload.url;
-    isPhished = isMalicious;
   } else {
     // Hardened check: must start with / and not // or /\
     const isSafeRelative =
@@ -51,10 +50,8 @@ export const OpenRedirectVisualizer: React.FC<Props> = ({ currentStep: _currentS
 
     if (isSafeRelative) {
       finalDestinationUrl = currentPayload.url;
-      isPhished = false;
     } else {
       finalDestinationUrl = '/dashboard (Fallback Safe)';
-      isPhished = false;
     }
   }
 
@@ -102,7 +99,7 @@ export const OpenRedirectVisualizer: React.FC<Props> = ({ currentStep: _currentS
           Select Inbound Return URL Query Parameter (?returnUrl=...):
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
-          {Object.entries(presets).map(([key, item]) => (
+          {Object.entries(REDIRECT_PRESETS).map(([key, item]) => (
             <button
               key={key}
               onClick={() => setSelectedPreset(key)}

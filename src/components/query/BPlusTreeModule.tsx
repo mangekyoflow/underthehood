@@ -4,15 +4,9 @@ import {
   Trash2,
   Search,
   RotateCcw,
-  ArrowRight,
-  Zap,
-  GitFork,
-  CheckCircle2,
   Split,
-  Layers,
   Filter,
   HardDrive,
-  Cpu,
   Compass,
   Calculator,
   ChevronDown,
@@ -42,6 +36,8 @@ interface BPlusTreeModuleProps {
   onChallengeComplete: (id: string) => void;
   completedChallenges: Record<string, boolean>;
 }
+
+const INITIAL_BPLUS_KEYS = [10, 20, 30, 40, 50] as const;
 
 export const BPlusTreeModule: React.FC<BPlusTreeModuleProps> = ({
   onChallengeComplete,
@@ -88,15 +84,14 @@ export const BPlusTreeModule: React.FC<BPlusTreeModuleProps> = ({
   useEffect(() => {
     resetNodeCounter();
     let currentRoot: BPlusNode | null = null;
-    const initialKeys = [10, 20, 30, 40, 50];
-    initialKeys.forEach((k) => {
+    INITIAL_BPLUS_KEYS.forEach((k) => {
       const res = insertKey(currentRoot, k, maxCapacity);
       currentRoot = res.newRoot;
     });
     setRoot(currentRoot);
     addLog(
       'TREE-INIT',
-      `Initialized B+ tree with keys [${initialKeys.join(', ')}]. Fan-out order M = ${maxCapacity}.`,
+      `Initialized B+ tree with keys [${INITIAL_BPLUS_KEYS.join(', ')}]. Fan-out order M = ${maxCapacity}.`,
       'info'
     );
   }, [maxCapacity]);

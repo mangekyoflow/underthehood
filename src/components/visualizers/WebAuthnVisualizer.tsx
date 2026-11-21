@@ -5,20 +5,11 @@ import {
   ShieldAlert,
   Laptop,
   Server,
-  AlertTriangle,
   Lock,
-  Unlock,
   Smartphone,
-  ArrowRight,
   Play,
   Pause,
-  Send,
-  Sparkles,
-  CheckCircle2,
-  Key,
   Radio,
-  RefreshCw,
-  Database,
 } from 'lucide-react';
 import { MetricCard } from '../common/MetricCard';
 import { playTick, playSuccess, playAlert } from '../../lib/sound';
@@ -29,26 +20,8 @@ interface Props {
   onSelectStep?: (step: number) => void;
 }
 
-export const WebAuthnVisualizer: React.FC<Props> = ({
-  currentStep: externalStep,
-  onSelectStep,
-}) => {
-  const [internalStep, setInternalStep] = useState<number>(0);
-  const currentStep = externalStep !== undefined ? externalStep : internalStep;
-
-  // Interactive Security Knobs
-  const [deviceType, setDeviceType] = useState<'touchid' | 'yubikey'>('touchid');
-  const [isPhishingSite, setIsPhishingSite] = useState<boolean>(false);
-  const [autoPlay, setAutoPlay] = useState<boolean>(false);
-  const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
-  const [authOutcome, setAuthOutcome] = useState<'IDLE' | 'SUCCESS' | 'PHISHING_BLOCKED'>('IDLE');
-
-  const realOrigin = 'https://mybank.com';
-  const currentOrigin = isPhishingSite ? 'https://evil-phish-bank.com' : realOrigin;
-  const challenge = '0x8f4c2b9a1e3d77c2';
-  const rpId = isPhishingSite ? 'evil-phish-bank.com' : 'mybank.com';
-
-  const stepsData = [
+function getWebAuthnStepsData(currentOrigin: string, challenge: string, isPhishingSite: boolean) {
+  return [
     {
       title: 'Step 1: Registration — Enclave Keypair Generation',
       detail:
@@ -107,6 +80,27 @@ export const WebAuthnVisualizer: React.FC<Props> = ({
       badge: isPhishingSite ? 'Phish Defeated' : 'Verified Assertion',
     },
   ];
+}
+
+export const WebAuthnVisualizer: React.FC<Props> = ({
+  currentStep: externalStep,
+  onSelectStep,
+}) => {
+  const [internalStep, setInternalStep] = useState<number>(0);
+  const currentStep = externalStep !== undefined ? externalStep : internalStep;
+
+  // Interactive Security Knobs
+  const [deviceType, setDeviceType] = useState<'touchid' | 'yubikey'>('touchid');
+  const [isPhishingSite, setIsPhishingSite] = useState<boolean>(false);
+  const [autoPlay, setAutoPlay] = useState<boolean>(false);
+  const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
+  const [authOutcome, setAuthOutcome] = useState<'IDLE' | 'SUCCESS' | 'PHISHING_BLOCKED'>('IDLE');
+
+  const realOrigin = 'https://mybank.com';
+  const currentOrigin = isPhishingSite ? 'https://evil-phish-bank.com' : realOrigin;
+  const challenge = '0x8f4c2b9a1e3d77c2';
+
+  const stepsData = getWebAuthnStepsData(currentOrigin, challenge, isPhishingSite);
 
   const activeStep = stepsData[currentStep] || stepsData[0];
 

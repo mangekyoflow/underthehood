@@ -1,20 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Cog,
-  Sliders,
-  Layers,
-  Eye,
-  Zap,
-  Flame,
-  ShieldAlert,
-  ChevronRight,
-  Activity,
-  CheckCircle2,
-  Info,
-  Compass,
-  Box,
-} from 'lucide-react';
-import { playTick, playSuccess } from '../../lib/sound';
+import { Cog, Sliders, Layers, Zap, Flame, Activity, Info, Compass } from 'lucide-react';
+import { playTick } from '../../lib/sound';
 import clsx from 'clsx';
 
 interface ActuatorPart {
@@ -189,57 +175,6 @@ const ROBOT_ARM_JOINTS = [
   },
 ];
 
-const ENERGY_FLOW_STEPS = [
-  {
-    step: '01',
-    title: 'DC Power Bus Distribution',
-    input: '48V DC Battery / Power Supply',
-    output: 'Filtered DC Bus with Low-ESR Capacitors',
-    physics:
-      'Low-inductance bus rails deliver high instantaneous current bursts without voltage sag.',
-  },
-  {
-    step: '02',
-    title: 'FOC 3-Phase Inversion',
-    input: 'SVPWM Duty Cycle Commands',
-    output: '3-Phase AC Currents (I_u, I_v, I_w)',
-    physics:
-      'Field-Oriented Control performs Clarke and Park transformations to align stator current orthogonal to rotor flux (I_q = I_torque, I_d = 0).',
-  },
-  {
-    step: '03',
-    title: 'Electromagnetic Airgap Flux',
-    input: '3-Phase Stator Coil Excitations',
-    output: 'Rotating Magnetic Field B (1.2 Tesla)',
-    physics:
-      'Copper windings magnetize slotted silicon-steel teeth, creating a smooth traveling electromagnetic wave.',
-  },
-  {
-    step: '04',
-    title: 'Rotor Lorentz Torque Generation',
-    input: 'Stator Flux × Permanent NdFeB Magnets',
-    output: 'Raw Motor Torque: τ_motor = 1.6 Nm @ 3000 RPM',
-    physics:
-      'Lorentz force F = I (L × B) acts on rotor magnet poles, converting electrical power into mechanical shaft rotation (P = τ · ω).',
-  },
-  {
-    step: '05',
-    title: 'Harmonic Drive Torque Multiplication',
-    input: 'Wave Generator High-Speed Rotation (50:1)',
-    output: 'Joint Torque: τ_joint = 80 Nm @ 60 RPM',
-    physics:
-      'Strain-wave flexspline meshes with circular spline, exchanging high speed for 50x amplified torque with zero mechanical backlash.',
-  },
-  {
-    step: '06',
-    title: 'Link Motion & Sensor Feedback',
-    input: 'Output Flange Rotation',
-    output: 'Physical Arm Kinematics & 19-Bit Feedback',
-    physics:
-      'End-effector reaches target coordinate while optical encoder closes the PID loop in real time at 1 kHz.',
-  },
-];
-
 interface ActuatorStructureViewerProps {
   tutorialAction?: { actionType: string; params: any; timestamp: number } | null;
 }
@@ -303,8 +238,6 @@ export const ActuatorStructureViewer: React.FC<ActuatorStructureViewerProps> = (
   const jointTempC = ambientTemp + heatLossW * 0.95;
 
   const selectedPart = ACTUATOR_PARTS.find((p) => p.id === selectedPartId) || ACTUATOR_PARTS[0];
-  const selectedJoint =
-    ROBOT_ARM_JOINTS.find((j) => j.id === selectedJointId) || ROBOT_ARM_JOINTS[1];
 
   const handleSelectPart = (id: string) => {
     playTick();

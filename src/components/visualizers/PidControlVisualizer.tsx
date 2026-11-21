@@ -1,21 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  Play,
-  Pause,
-  RotateCcw,
-  SkipForward,
-  Wind,
-  ShieldAlert,
-  Zap,
-  Activity,
-  CheckCircle2,
-  Sliders,
-  Info,
-  HelpCircle,
-  AlertTriangle,
-  Gauge,
-  Sparkles,
-} from 'lucide-react';
+import { Play, Pause, RotateCcw, SkipForward, Wind, Sliders } from 'lucide-react';
 import { playTick, playSuccess, playAlert } from '../../lib/sound';
 import { ChallengeCard } from '../common/ChallengeCard';
 import { ExplanationDrawer } from '../common/ExplanationDrawer';
@@ -55,20 +39,20 @@ export const PidControlVisualizer: React.FC<PidControlVisualizerProps> = ({
   // Environment & Disturbances
   const [disturbanceForce, setDisturbanceForce] = useState<number>(0);
   const [noiseEnabled, setNoiseEnabled] = useState<boolean>(false);
-  const [gravityBias, setGravityBias] = useState<number>(15); // gravity load droop
+  const gravityBias = 15; // gravity load droop
 
   // Simulation State
   const [isRunning, setIsRunning] = useState<boolean>(true);
   const [simTime, setSimTime] = useState<number>(0);
   const [pv, setPv] = useState<number>(0); // Process variable (current angle in deg)
-  const [velocity, setVelocity] = useState<number>(0);
+  const [, setVelocity] = useState<number>(0);
   const [integral, setIntegral] = useState<number>(0);
   const [prevError, setPrevError] = useState<number>(90);
   const [history, setHistory] = useState<HistoryPoint[]>([]);
 
   // Telemetry metrics
   const [maxPv, setMaxPv] = useState<number>(0);
-  const [settledTime, setSettledTime] = useState<number | null>(null);
+  const [, setSettledTime] = useState<number | null>(null);
   const [disturbanceInjectedTime, setDisturbanceInjectedTime] = useState<number | null>(null);
 
   // References for animation loop
@@ -141,7 +125,7 @@ export const PidControlVisualizer: React.FC<PidControlVisualizerProps> = ({
   }, [tutorialAction]);
 
   // Presets
-  const applyPreset = (presetKp: number, presetKi: number, presetKd: number, name: string) => {
+  const applyPreset = (presetKp: number, presetKi: number, presetKd: number, _name: string) => {
     playTick();
     setKp(presetKp);
     setKi(presetKi);

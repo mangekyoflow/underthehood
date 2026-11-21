@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   Search,
   X,
@@ -9,7 +9,6 @@ import {
   ShieldCheck,
   Route,
   Database,
-  Compass,
   Bot,
   Microchip,
 } from 'lucide-react';
@@ -201,18 +200,21 @@ export const SearchModal: React.FC<Props> = ({
     }
 
     return results;
-  }, [lessons, query]);
+  }, [lessons, query, t]);
 
-  const handleSelectItem = (item: SearchResultItem) => {
-    if (item.type === 'systems_module') {
-      if (onSelectSystemsModule) {
-        onSelectSystemsModule(item.tab, item.moduleId);
+  const handleSelectItem = useCallback(
+    (item: SearchResultItem) => {
+      if (item.type === 'systems_module') {
+        if (onSelectSystemsModule) {
+          onSelectSystemsModule(item.tab, item.moduleId);
+        }
+      } else {
+        onSelectLesson(item.lesson.id);
       }
-    } else {
-      onSelectLesson(item.lesson.id);
-    }
-    onClose();
-  };
+      onClose();
+    },
+    [onClose, onSelectLesson, onSelectSystemsModule]
+  );
 
   // Handle keyboard navigation inside search modal
   useEffect(() => {
@@ -239,7 +241,7 @@ export const SearchModal: React.FC<Props> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, searchResults, selectedIndex, onClose]);
+  }, [isOpen, searchResults, selectedIndex, onClose, handleSelectItem]);
 
   if (!isOpen) return null;
 

@@ -5,16 +5,9 @@ import {
   Cloud,
   Zap,
   Users,
-  ArrowRight,
-  ShieldCheck,
-  AlertTriangle,
-  RefreshCw,
   Sparkles,
-  CheckCircle2,
   Sliders,
   Layers,
-  HardDrive,
-  Wifi,
   Activity,
   Info,
   FileText,
@@ -22,7 +15,7 @@ import {
 } from 'lucide-react';
 import { MetricCard } from '../common/MetricCard';
 import { Badge } from '../common/Badge';
-import { playTick, playSuccess, playAlert } from '../../lib/sound';
+import { playTick, playSuccess } from '../../lib/sound';
 
 interface Props {
   onChallengeComplete?: (id: string) => void;
@@ -342,17 +335,6 @@ export const NapkinMathVisualizer: React.FC<Props> = ({
       playTick();
       setCurrentStep((prev) => prev - 1);
     }
-  };
-
-  const handleReset = () => {
-    playTick();
-    setCurrentStep(0);
-    setDauMillions(10);
-    setRequestsPerUser(20);
-    setPeakMultiplier(3.0);
-    setServerCapacityRps(1000);
-    setDailyPhotosMillions(1.0);
-    setPhotoSizeMb(2.0);
   };
 
   return (

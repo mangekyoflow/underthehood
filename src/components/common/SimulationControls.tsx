@@ -20,6 +20,13 @@ interface SimulationControlsProps {
   className?: string;
 }
 
+const SIMULATION_SPEEDS = [0.5, 1, 2, 4] as const;
+
+const SIMULATION_VARIANT_ACCENTS = {
+  network: 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-600/20',
+  database: 'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/20',
+} as const;
+
 export const SimulationControls: React.FC<SimulationControlsProps> = ({
   isPlaying,
   onPlayPause,
@@ -36,18 +43,13 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
   variant = 'network',
   className,
 }) => {
-  const speeds = [0.5, 1, 2, 4];
-
   const handleAction = (callback?: () => void) => {
     if (!callback) return;
     playTick();
     callback();
   };
 
-  const activeAccent =
-    variant === 'network'
-      ? 'bg-cyan-600 hover:bg-cyan-500 text-white shadow-cyan-600/20'
-      : 'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/20';
+  const activeAccent = SIMULATION_VARIANT_ACCENTS[variant];
 
   return (
     <div
@@ -147,7 +149,7 @@ export const SimulationControls: React.FC<SimulationControlsProps> = ({
       {/* Speed Controls */}
       <div className="flex items-center gap-1 bg-parchment-100 dark:bg-parchment-950 p-1 rounded-xl border border-parchment-200 dark:border-parchment-800">
         <Gauge className="w-3.5 h-3.5 text-ink-muted dark:text-ink-darkMuted ml-1.5 mr-0.5" />
-        {speeds.map((s) => (
+        {SIMULATION_SPEEDS.map((s) => (
           <button
             key={s}
             onClick={() => {

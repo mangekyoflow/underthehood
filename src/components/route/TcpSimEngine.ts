@@ -1,4 +1,4 @@
-import { TcpAlgorithm, RenoState, CubicState, BbrState, TcpSimPoint } from '../../types/route';
+import { RenoState, CubicState, BbrState, TcpSimPoint } from '../../types/route';
 
 export interface TcpConfig {
   bandwidthMbps: number; // 10 - 100 Mbps
@@ -45,12 +45,6 @@ export interface TcpEngineState {
 }
 
 export function createInitialTcpState(config: TcpConfig): TcpEngineState {
-  // BDP (Bandwidth-Delay Product) in packets: (Bandwidth in bps * RTT in sec) / (1500 bytes * 8 bits)
-  const bdpPackets = Math.max(
-    4,
-    Math.round((config.bandwidthMbps * 1e6 * (config.baselineRttMs / 1000)) / (1500 * 8))
-  );
-
   const initialPoint: TcpSimPoint = {
     time: 0,
     renoCwnd: 2,
@@ -122,10 +116,10 @@ export function stepTcpSimulation(state: TcpEngineState, config: TcpConfig): Tcp
   // -------------------------------------------------------------
   let renoCwnd = state.renoCwnd;
   let renoSsthresh = state.renoSsthresh;
-  let renoState: RenoState = state.renoState;
+  let renoState: RenoState;
   let renoLost = state.renoLostPackets;
   let renoRetrans = state.renoRetransmissions;
-  let renoEvent = '';
+  let renoEvent: string;
 
   const renoExcess = Math.max(0, renoCwnd - bdp);
   const rawRenoQueue = Math.min(config.bufferCapacity + 10, renoExcess + crossNoise);
@@ -165,7 +159,7 @@ export function stepTcpSimulation(state: TcpEngineState, config: TcpConfig): Tcp
   let cubicWmax = state.cubicWmax;
   let cubicEpoch = state.cubicEpochTime + 1;
   let cubicK = state.cubicK;
-  let cubicState: CubicState = state.cubicState;
+  let cubicState: CubicState;
   let cubicLost = state.cubicLostPackets;
 
   const cubicExcess = Math.max(0, cubicCwnd - bdp);
@@ -212,12 +206,9 @@ export function stepTcpSimulation(state: TcpEngineState, config: TcpConfig): Tcp
   // -------------------------------------------------------------
   let bbrState: BbrState = state.bbrState;
   let bbrCycle = state.bbrCycleIndex;
-  let bbrBtlBw = state.bbrBtlBw;
-  let bbrMinRtt = state.bbrMinRtt;
+  const bbrBtlBw = config.bandwidthMbps;
+  const bbrMinRtt = config.baselineRttMs;
   let bbrLost = state.bbrLostPackets;
-
-  bbrBtlBw = config.bandwidthMbps;
-  bbrMinRtt = config.baselineRttMs;
 
   let pacingGain = 1.0;
 

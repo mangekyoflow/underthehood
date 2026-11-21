@@ -1,16 +1,5 @@
 import React, { useState } from 'react';
-import {
-  Calculator,
-  ShieldAlert,
-  Copy,
-  Check,
-  RotateCcw,
-  AlertTriangle,
-  ExternalLink,
-  Sparkles,
-  BookOpen,
-} from 'lucide-react';
-import { MetricCard } from '../common/MetricCard';
+import { Calculator, ShieldAlert, Copy, Check, RotateCcw, Sparkles } from 'lucide-react';
 import { Badge } from '../common/Badge';
 import { playTick, playSuccess } from '../../lib/sound';
 import clsx from 'clsx';
@@ -106,12 +95,8 @@ export const CvssCalculator: React.FC = () => {
 
     const iss = 1 - (1 - cVal) * (1 - iVal) * (1 - aVal);
 
-    let impact = 0;
-    if (state.scope === 'U') {
-      impact = 6.42 * iss;
-    } else {
-      impact = 7.52 * (iss - 0.029) - 3.25 * Math.pow(iss - 0.02, 15);
-    }
+    const impact =
+      state.scope === 'U' ? 6.42 * iss : 7.52 * (iss - 0.029) - 3.25 * Math.pow(iss - 0.02, 15);
 
     const exploitability = 8.22 * av * ac * pr * ui;
 

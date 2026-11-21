@@ -1,22 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Layers,
-  Cpu,
-  Box,
-  Sparkles,
-  CheckCircle2,
-  ChevronRight,
-  Eye,
-  Zap,
-  ShieldCheck,
-  Activity,
-  Compass,
-  Flame,
-  Info,
-  Filter,
-  Clock,
-} from 'lucide-react';
-import { playTick, playSuccess } from '../../lib/sound';
+import { Layers, Cpu, Box, CheckCircle2, Eye, Zap, Flame, Info, Clock } from 'lucide-react';
+import { playTick } from '../../lib/sound';
 import clsx from 'clsx';
 
 interface SiliconBlock {

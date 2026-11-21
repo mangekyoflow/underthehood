@@ -104,6 +104,13 @@ export interface Translations {
   footerTitle: string;
   footerTagline: string;
   builtForSystems: string;
+
+  // PWA & Offline
+  installApp: string;
+  appInstalled: string;
+  offlineMode: string;
+  updateAvailable: string;
+  reload: string;
 }
 
 export const TRANSLATIONS: Record<Language, Translations> = {
@@ -190,6 +197,11 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     footerTitle: 'Designed to Scale Unified Suite',
     footerTagline: '35 Explorable Modules across Security, Networking, Storage, Robotics & Silicon',
     builtForSystems: 'Built for tactile systems engineering and security comprehension.',
+    installApp: 'Install App',
+    appInstalled: 'Installed',
+    offlineMode: 'Offline Mode',
+    updateAvailable: 'New version available',
+    reload: 'Reload',
   },
   es: {
     courseTitle: 'Diseñado para Asegurar',
@@ -275,6 +287,11 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     footerTagline: '35 Módulos Explorables en Seguridad, Redes, Almacenamiento, Robótica y Silicio',
     builtForSystems:
       'Diseñado para la ingeniería de sistemas táctil y la comprensión de seguridad.',
+    installApp: 'Instalar App',
+    appInstalled: 'Instalada',
+    offlineMode: 'Modo sin conexión',
+    updateAvailable: 'Nueva versión disponible',
+    reload: 'Recargar',
   },
   ja: {
     courseTitle: 'Designed to Secure',
@@ -360,6 +377,11 @@ export const TRANSLATIONS: Record<Language, Translations> = {
     footerTagline:
       'セキュリティ、ネットワーク、ストレージ、ロボティクス、シリコンにわたる35の体験型モジュール',
     builtForSystems: '触覚的システム工学と直感的なセキュリティ理解のために設計。',
+    installApp: 'アプリをインストール',
+    appInstalled: 'インストール済み',
+    offlineMode: 'オフラインモード',
+    updateAvailable: '新しいバージョンがあります',
+    reload: '再読み込み',
   },
   de: {
     courseTitle: 'Designed to Secure',
@@ -446,6 +468,11 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       '35 interaktive Module für Sicherheit, Netzwerke, Storage, Robotik und Halbleiter',
     builtForSystems:
       'Entwickelt für greifbare Systemtechnik und intuitives Sicherheitsverständnis.',
+    installApp: 'App installieren',
+    appInstalled: 'Installiert',
+    offlineMode: 'Offline-Modus',
+    updateAvailable: 'Neue Version verfügbar',
+    reload: 'Neu laden',
   },
   fr: {
     courseTitle: 'Designed to Secure',
@@ -532,5 +559,10 @@ export const TRANSLATIONS: Record<Language, Translations> = {
       '35 modules interactifs à travers la Sécurité, les Réseaux, le Stockage, la Robotique et le Silicium',
     builtForSystems:
       "Conçu pour l'ingénierie des systèmes tactile et la compréhension de la sécurité.",
+    installApp: "Installer l'app",
+    appInstalled: 'Installée',
+    offlineMode: 'Mode hors ligne',
+    updateAvailable: 'Nouvelle version disponible',
+    reload: 'Recharger',
   },
 };

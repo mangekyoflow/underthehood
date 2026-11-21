@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Database,
   HardDrive,
@@ -6,15 +6,10 @@ import {
   ArrowDown,
   RefreshCw,
   Zap,
-  Play,
-  Pause,
   Plus,
   Trash2,
   Search,
-  CheckCircle2,
-  AlertTriangle,
   FileCode,
-  Binary,
   Radio,
 } from 'lucide-react';
 import { LsmState, ReadPathResult } from './LsmEngine';
@@ -29,14 +24,14 @@ interface LsmPipelineCanvasProps {
   ) => void;
 }
 
+const PIPELINE_ANIMATION_SPEED_SEC = 2.0;
+
 export const LsmPipelineCanvas: React.FC<LsmPipelineCanvasProps> = ({
   lsmState,
   lastAction,
   lookupResult,
   onQuickPreset,
 }) => {
-  const [pipelineSpeed, setPipelineSpeed] = useState<number>(2.0);
-
   const memTableFull = lsmState.activeMemTable.length >= lsmState.memTableThreshold;
   const l0Count = lsmState.l0Tables.length;
   const l1Count = lsmState.l1Tables.length;
@@ -228,13 +223,16 @@ export const LsmPipelineCanvas: React.FC<LsmPipelineCanvasProps> = ({
           {(lastAction === 'write' || lastAction === 'idle') && (
             <g>
               <g>
-                <animateMotion dur={`${pipelineSpeed}s`} repeatCount="indefinite">
+                <animateMotion dur={`${PIPELINE_ANIMATION_SPEED_SEC}s`} repeatCount="indefinite">
                   <mpath href="#pathClientToWal" />
                 </animateMotion>
                 <circle r="4.5" fill="#38bdf8" className="shadow-xs animate-pulse" />
               </g>
               <g>
-                <animateMotion dur={`${pipelineSpeed * 1.2}s`} repeatCount="indefinite">
+                <animateMotion
+                  dur={`${PIPELINE_ANIMATION_SPEED_SEC * 1.2}s`}
+                  repeatCount="indefinite"
+                >
                   <mpath href="#pathClientToMemTable" />
                 </animateMotion>
                 <rect

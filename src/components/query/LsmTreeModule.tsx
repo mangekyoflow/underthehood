@@ -1,22 +1,14 @@
 import React, { useState } from 'react';
 import {
   Database,
-  HardDrive,
-  Layers,
   ArrowDown,
   Plus,
   Trash2,
   Search,
   RefreshCw,
-  Zap,
-  CheckCircle2,
-  AlertTriangle,
   FileCode,
-  Clock,
   RotateCcw,
   Binary,
-  Filter,
-  Eye,
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';

@@ -1,22 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Zap,
-  ShieldAlert,
-  ShieldCheck,
-  Play,
-  RotateCcw,
-  Copy,
-  Check,
-  Terminal,
-  Code2,
-  AlertTriangle,
-  ArrowRight,
-  CornerDownRight,
-  Cpu,
-} from 'lucide-react';
+import { Zap, ShieldAlert, ShieldCheck, Play, RotateCcw, Copy, Check, Code2 } from 'lucide-react';
 import { AttackPreset, getLessonAttackData } from '../../data/attackPayloads';
 import { LogEntry } from '../common/TerminalLog';
-import { Badge } from '../common/Badge';
 import { playAlert, playSuccess, playTick } from '../../lib/sound';
 import clsx from 'clsx';
 

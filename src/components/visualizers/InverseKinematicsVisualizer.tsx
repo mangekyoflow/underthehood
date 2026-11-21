@@ -1,21 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import {
-  Compass,
-  Sliders,
-  Play,
-  RotateCcw,
-  Sparkles,
-  CheckCircle2,
-  AlertTriangle,
-  ShieldCheck,
-  Activity,
-  Target,
-  Layers,
-  ArrowRight,
-  Maximize2,
-  Eye,
-  Info,
-} from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Compass, Sliders, AlertTriangle, ShieldCheck, Activity, Target, Info } from 'lucide-react';
 import { playTick, playSuccess } from '../../lib/sound';
 import { ChallengeCard } from '../common/ChallengeCard';
 import { MODULES } from '../../data/modulesData';
@@ -41,7 +25,7 @@ export const InverseKinematicsVisualizer: React.FC<InverseKinematicsVisualizerPr
   // End-Effector Target Coordinate (in canvas coordinates centered at base [0, 0])
   const [targetX, setTargetX] = useState<number>(180);
   const [targetY, setTargetY] = useState<number>(110);
-  const [targetAngleDeg, setTargetAngleDeg] = useState<number>(15); // End-effector orientation
+  const targetAngleDeg = 15; // End-effector orientation
 
   // Joint Angles (in degrees)
   const [theta1, setTheta1] = useState<number>(35);

@@ -26,6 +26,33 @@ interface ActuateTrackViewProps {
   onSelectModule?: (id: ActuateModuleId | 'actuator-structure') => void;
 }
 
+const ACTUATE_MODULES = [
+  {
+    id: 'pid-control-loop' as ActuateModuleId,
+    num: '07',
+    title: 'Closed-Loop PID Control',
+    desc: 'Feedback gains, step response & disturbance rejection',
+  },
+  {
+    id: 'ros2-teleoperation' as ActuateModuleId,
+    num: '08',
+    title: 'ROS 2 & Zenoh Teleoperation',
+    desc: 'Pub/sub determinism, QoS profiles & bufferbloat',
+  },
+  {
+    id: 'inverse-kinematics' as ActuateModuleId,
+    num: '09',
+    title: 'Inverse Kinematics & Jacobians',
+    desc: 'Manipulability ellipsoids, singularities & DLS',
+  },
+  {
+    id: 'foc-motor-control' as ActuateModuleId,
+    num: '10',
+    title: 'Field-Oriented Control (FOC)',
+    desc: 'Vector commutation, Clarke/Park transforms & SVPWM',
+  },
+] as const;
+
 export const ActuateTrackView: React.FC<ActuateTrackViewProps> = ({
   initialModuleId = 'pid-control-loop',
   initialStep = 0,
@@ -86,7 +113,7 @@ export const ActuateTrackView: React.FC<ActuateTrackViewProps> = ({
       });
       setLastAppliedActionStep(currentStepIndex);
     }
-  }, [activeView, currentStepIndex, viewMode]);
+  }, [activeView, currentStepIndex, viewMode, currentStep]);
 
   const handleSelectStep = (idx: number) => {
     setStepIndices((prev) => ({ ...prev, [activeView]: idx }));
@@ -102,33 +129,6 @@ export const ActuateTrackView: React.FC<ActuateTrackViewProps> = ({
       timestamp: Date.now(),
     });
   };
-
-  const modules = [
-    {
-      id: 'pid-control-loop' as ActuateModuleId,
-      num: '07',
-      title: 'Closed-Loop PID Control',
-      desc: 'Feedback gains, step response & disturbance rejection',
-    },
-    {
-      id: 'ros2-teleoperation' as ActuateModuleId,
-      num: '08',
-      title: 'ROS 2 & Zenoh Teleoperation',
-      desc: 'Pub/sub determinism, QoS profiles & bufferbloat',
-    },
-    {
-      id: 'inverse-kinematics' as ActuateModuleId,
-      num: '09',
-      title: 'Inverse Kinematics & Jacobians',
-      desc: 'Manipulability ellipsoids, singularities & DLS',
-    },
-    {
-      id: 'foc-motor-control' as ActuateModuleId,
-      num: '10',
-      title: 'Field-Oriented Control (FOC)',
-      desc: 'Vector commutation, Clarke/Park transforms & SVPWM',
-    },
-  ];
 
   const handleSelectModule = (id: ActuateModuleId) => {
     playTick();
@@ -208,7 +208,7 @@ export const ActuateTrackView: React.FC<ActuateTrackViewProps> = ({
       {/* Submodule Segmented Pills */}
       <div className="flex items-center justify-between gap-3 overflow-x-auto touch-scroll no-scrollbar pb-1">
         <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto touch-scroll no-scrollbar max-w-full shrink-0">
-          {modules.map((m) => {
+          {ACTUATE_MODULES.map((m) => {
             const isActive = activeView === m.id;
             return (
               <button

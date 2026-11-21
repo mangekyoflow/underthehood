@@ -12,6 +12,36 @@ interface MetricCardProps {
   className?: string;
 }
 
+const METRIC_BORDER_COLORS: Record<NonNullable<MetricCardProps['variant']>, string> = {
+  cyan: 'border-cyan-500/25 dark:border-cyan-900/40 hover:border-cyan-500/40 bg-white/80 dark:bg-parchment-900/80',
+  blue: 'border-blue-500/25 dark:border-blue-900/40 hover:border-blue-500/40 bg-white/80 dark:bg-parchment-900/80',
+  purple:
+    'border-purple-500/25 dark:border-purple-900/40 hover:border-purple-500/40 bg-white/80 dark:bg-parchment-900/80',
+  amber:
+    'border-amber-500/25 dark:border-amber-900/40 hover:border-amber-500/40 bg-white/80 dark:bg-parchment-900/80',
+  emerald:
+    'border-emerald-500/25 dark:border-emerald-900/40 hover:border-emerald-500/40 bg-white/80 dark:bg-parchment-900/80',
+  zinc: 'border-parchment-200 dark:border-parchment-800 hover:border-parchment-300 dark:hover:border-parchment-700 bg-white/80 dark:bg-parchment-900/80',
+};
+
+const METRIC_FLASH_ANIMATIONS: Record<NonNullable<MetricCardProps['variant']>, string> = {
+  cyan: 'animate-chip-flash',
+  blue: 'animate-chip-flash',
+  purple: 'animate-chip-flash',
+  amber: 'animate-chip-flash-amber',
+  emerald: 'animate-chip-flash-emerald',
+  zinc: 'animate-chip-flash',
+};
+
+const METRIC_TEXT_COLORS: Record<NonNullable<MetricCardProps['variant']>, string> = {
+  cyan: 'text-cyan-700 dark:text-cyan-300',
+  blue: 'text-blue-700 dark:text-blue-300',
+  purple: 'text-purple-700 dark:text-purple-300',
+  amber: 'text-amber-700 dark:text-amber-300',
+  emerald: 'text-emerald-700 dark:text-emerald-300',
+  zinc: 'text-ink-light dark:text-ink-dark',
+};
+
 export const MetricCard: React.FC<MetricCardProps> = ({
   label,
   value,
@@ -34,42 +64,12 @@ export const MetricCard: React.FC<MetricCardProps> = ({
     }
   }, [value]);
 
-  const borderColors = {
-    cyan: 'border-cyan-500/25 dark:border-cyan-900/40 hover:border-cyan-500/40 bg-white/80 dark:bg-parchment-900/80',
-    blue: 'border-blue-500/25 dark:border-blue-900/40 hover:border-blue-500/40 bg-white/80 dark:bg-parchment-900/80',
-    purple:
-      'border-purple-500/25 dark:border-purple-900/40 hover:border-purple-500/40 bg-white/80 dark:bg-parchment-900/80',
-    amber:
-      'border-amber-500/25 dark:border-amber-900/40 hover:border-amber-500/40 bg-white/80 dark:bg-parchment-900/80',
-    emerald:
-      'border-emerald-500/25 dark:border-emerald-900/40 hover:border-emerald-500/40 bg-white/80 dark:bg-parchment-900/80',
-    zinc: 'border-parchment-200 dark:border-parchment-800 hover:border-parchment-300 dark:hover:border-parchment-700 bg-white/80 dark:bg-parchment-900/80',
-  };
-
-  const flashAnimation = {
-    cyan: 'animate-chip-flash',
-    blue: 'animate-chip-flash',
-    purple: 'animate-chip-flash',
-    amber: 'animate-chip-flash-amber',
-    emerald: 'animate-chip-flash-emerald',
-    zinc: 'animate-chip-flash',
-  };
-
-  const textColors = {
-    cyan: 'text-cyan-700 dark:text-cyan-300',
-    blue: 'text-blue-700 dark:text-blue-300',
-    purple: 'text-purple-700 dark:text-purple-300',
-    amber: 'text-amber-700 dark:text-amber-300',
-    emerald: 'text-emerald-700 dark:text-emerald-300',
-    zinc: 'text-ink-light dark:text-ink-dark',
-  };
-
   return (
     <div
       className={clsx(
         'rounded-xl border p-3 sm:p-3.5 transition-all duration-200 flex flex-col justify-between shadow-xs hover:-translate-y-0.5 min-w-0 overflow-hidden',
-        borderColors[variant],
-        isChanged && flashAnimation[variant],
+        METRIC_BORDER_COLORS[variant],
+        isChanged && METRIC_FLASH_ANIMATIONS[variant],
         className
       )}
     >
@@ -101,7 +101,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
           key={String(value)}
           className={clsx(
             'text-lg sm:text-xl md:text-2xl font-bold font-mono tracking-tight inline-block truncate',
-            textColors[variant],
+            METRIC_TEXT_COLORS[variant],
             isChanged && 'animate-value-swap'
           )}
           title={String(value)}

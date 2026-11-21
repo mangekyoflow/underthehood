@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { UrlLifecycleStep } from '../../types/route';
 import clsx from 'clsx';
@@ -8,158 +8,160 @@ interface HexDumpViewerProps {
   dnsRecordType?: string;
 }
 
+// Deterministically generate a realistic byte stream for this step
+function generatePacketBytes(
+  step: UrlLifecycleStep,
+  _dnsRecordType = 'A'
+): {
+  bytes: number[];
+  ethRange: [number, number];
+  ipRange: [number, number];
+  l4Range: [number, number];
+  appRange: [number, number];
+} {
+  const bytes: number[] = [];
+
+  // 1. Ethernet II Header (14 bytes)
+  const isIpv6 = step.dstIp.includes(':') || step.srcIp.includes(':');
+  const ethHeader = [
+    0x02,
+    0x42,
+    0xc0,
+    0xa8,
+    0x01,
+    0x69, // Dst MAC
+    0x52,
+    0x54,
+    0x00,
+    0x12,
+    0x34,
+    0x56, // Src MAC
+    isIpv6 ? 0x86 : 0x08,
+    isIpv6 ? 0xdd : 0x00, // EtherType
+  ];
+  const ethRange: [number, number] = [0, ethHeader.length];
+  bytes.push(...ethHeader);
+
+  // 2. IP Header (20 bytes for IPv4)
+  const isUdp = step.protocol === 'UDP';
+
+  const parseIpv4 = (ipStr: string): number[] => {
+    const parts = ipStr.split('.').map(Number);
+    return parts.length === 4 ? parts : [127, 0, 0, 1];
+  };
+  const srcBytes = parseIpv4(step.srcIp);
+  const dstBytes = parseIpv4(step.dstIp);
+
+  const ipStart = bytes.length;
+  const ipHeader = [
+    0x45, // Version 4, IHL 5 (20 bytes)
+    0x00, // DSCP / ECN
+    0x00,
+    0x48, // Total Length
+    0x1c,
+    0x46, // Identification
+    0x40,
+    0x00, // Flags (Don't Fragment), Fragment Offset 0
+    0x40, // TTL (64)
+    isUdp ? 0x11 : 0x06, // Protocol: 17 for UDP, 6 for TCP
+    0xb1,
+    0xe6, // Header Checksum
+    ...srcBytes,
+    ...dstBytes,
+  ];
+  bytes.push(...ipHeader);
+  const ipRange: [number, number] = [ipStart, bytes.length];
+
+  // 3. Transport Layer Header
+  const l4Start = bytes.length;
+  if (isUdp) {
+    const srcP = step.srcPort || 53214;
+    const dstP = step.dstPort || 53;
+    const udpHeader = [
+      (srcP >> 8) & 0xff,
+      srcP & 0xff,
+      (dstP >> 8) & 0xff,
+      dstP & 0xff,
+      0x00,
+      0x24, // Length
+      0x7a,
+      0x1c, // Checksum
+    ];
+    bytes.push(...udpHeader);
+  } else {
+    const srcP = step.srcPort || 52418;
+    const dstP = step.dstPort || 443;
+    const isSyn = step.packetSummary.includes('SYN');
+    const isAck = step.packetSummary.includes('ACK');
+    const flags = isSyn && isAck ? 0x12 : isSyn ? 0x02 : isAck ? 0x10 : 0x18;
+
+    const tcpHeader = [
+      (srcP >> 8) & 0xff,
+      srcP & 0xff,
+      (dstP >> 8) & 0xff,
+      dstP & 0xff,
+      0x00,
+      0xa4,
+      0x9f,
+      0x1b, // Sequence Number
+      0x42,
+      0x91,
+      0x84,
+      0x01, // Acknowledgment Number
+      0x80, // Data Offset
+      flags,
+      0xff,
+      0xff, // Window Size
+      0xa3,
+      0x22, // Checksum
+      0x00,
+      0x00, // Urgent Pointer
+      0x02,
+      0x04,
+      0x05,
+      0xb4,
+      0x01,
+      0x03,
+      0x03,
+      0x07,
+      0x01,
+      0x01,
+      0x04,
+      0x02,
+    ];
+    bytes.push(...tcpHeader);
+  }
+  const l4Range: [number, number] = [l4Start, bytes.length];
+
+  // 4. Application Layer Payload
+  const appStart = bytes.length;
+  let payloadText = step.packetSummary;
+  if (step.phase === 'DNS') {
+    payloadText = `\x00\x01\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03api\x0asystemslab\x03dev\x00\x00\x01\x00\x01`;
+  } else if (step.protocol === 'TLS 1.3') {
+    payloadText = `\x16\x03\x03\x00\x45\x01\x00\x00\x41\x03\x03TLS13_CLIENT_HELLO_CHACHA_POLY1305_SNI_SYSTEMSLAB_DEV`;
+  } else if (step.phase === 'HTTP') {
+    payloadText = `GET /v1/metrics HTTP/2\r\nHost: api.systemslab.dev\r\nUser-Agent: Browser/1.0\r\nAccept: */*\r\n\r\n`;
+  }
+
+  const appBytes: number[] = [];
+  for (let i = 0; i < Math.min(payloadText.length, 64); i++) {
+    appBytes.push(payloadText.charCodeAt(i) & 0xff);
+  }
+  bytes.push(...appBytes);
+  const appRange: [number, number] = [appStart, bytes.length];
+
+  return { bytes, ethRange, ipRange, l4Range, appRange };
+}
+
 export const HexDumpViewer: React.FC<HexDumpViewerProps> = ({ step, dnsRecordType = 'A' }) => {
   const [copied, setCopied] = useState(false);
   const [activeLayer, setActiveLayer] = useState<'all' | 'eth' | 'ip' | 'l4' | 'app'>('all');
 
-  // Deterministically generate a realistic byte stream for this step
-  const generatePacketBytes = (): {
-    bytes: number[];
-    ethRange: [number, number];
-    ipRange: [number, number];
-    l4Range: [number, number];
-    appRange: [number, number];
-  } => {
-    const bytes: number[] = [];
-
-    // 1. Ethernet II Header (14 bytes)
-    const isIpv6 = step.dstIp.includes(':') || step.srcIp.includes(':');
-    const ethHeader = [
-      0x02,
-      0x42,
-      0xc0,
-      0xa8,
-      0x01,
-      0x69, // Dst MAC
-      0x52,
-      0x54,
-      0x00,
-      0x12,
-      0x34,
-      0x56, // Src MAC
-      isIpv6 ? 0x86 : 0x08,
-      isIpv6 ? 0xdd : 0x00, // EtherType
-    ];
-    const ethRange: [number, number] = [0, ethHeader.length];
-    bytes.push(...ethHeader);
-
-    // 2. IP Header (20 bytes for IPv4)
-    const isUdp = step.protocol === 'UDP';
-
-    const parseIpv4 = (ipStr: string): number[] => {
-      const parts = ipStr.split('.').map(Number);
-      return parts.length === 4 ? parts : [127, 0, 0, 1];
-    };
-    const srcBytes = parseIpv4(step.srcIp);
-    const dstBytes = parseIpv4(step.dstIp);
-
-    const ipStart = bytes.length;
-    const ipHeader = [
-      0x45, // Version 4, IHL 5 (20 bytes)
-      0x00, // DSCP / ECN
-      0x00,
-      0x48, // Total Length
-      0x1c,
-      0x46, // Identification
-      0x40,
-      0x00, // Flags (Don't Fragment), Fragment Offset 0
-      0x40, // TTL (64)
-      isUdp ? 0x11 : 0x06, // Protocol: 17 for UDP, 6 for TCP
-      0xb1,
-      0xe6, // Header Checksum
-      ...srcBytes,
-      ...dstBytes,
-    ];
-    bytes.push(...ipHeader);
-    const ipRange: [number, number] = [ipStart, bytes.length];
-
-    // 3. Transport Layer Header
-    const l4Start = bytes.length;
-    if (isUdp) {
-      const srcP = step.srcPort || 53214;
-      const dstP = step.dstPort || 53;
-      const udpHeader = [
-        (srcP >> 8) & 0xff,
-        srcP & 0xff,
-        (dstP >> 8) & 0xff,
-        dstP & 0xff,
-        0x00,
-        0x24, // Length
-        0x7a,
-        0x1c, // Checksum
-      ];
-      bytes.push(...udpHeader);
-    } else {
-      const srcP = step.srcPort || 52418;
-      const dstP = step.dstPort || 443;
-      const isSyn = step.packetSummary.includes('SYN');
-      const isAck = step.packetSummary.includes('ACK');
-      let flags = 0x00;
-      if (isSyn && isAck) flags = 0x12;
-      else if (isSyn) flags = 0x02;
-      else if (isAck) flags = 0x10;
-      else flags = 0x18;
-
-      const tcpHeader = [
-        (srcP >> 8) & 0xff,
-        srcP & 0xff,
-        (dstP >> 8) & 0xff,
-        dstP & 0xff,
-        0x00,
-        0xa4,
-        0x9f,
-        0x1b, // Sequence Number
-        0x42,
-        0x91,
-        0x84,
-        0x01, // Acknowledgment Number
-        0x80, // Data Offset
-        flags,
-        0xff,
-        0xff, // Window Size
-        0xa3,
-        0x22, // Checksum
-        0x00,
-        0x00, // Urgent Pointer
-        0x02,
-        0x04,
-        0x05,
-        0xb4,
-        0x01,
-        0x03,
-        0x03,
-        0x07,
-        0x01,
-        0x01,
-        0x04,
-        0x02,
-      ];
-      bytes.push(...tcpHeader);
-    }
-    const l4Range: [number, number] = [l4Start, bytes.length];
-
-    // 4. Application Layer Payload
-    const appStart = bytes.length;
-    let payloadText = step.packetSummary;
-    if (step.phase === 'DNS') {
-      payloadText = `\x00\x01\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03api\x0asystemslab\x03dev\x00\x00\x01\x00\x01`;
-    } else if (step.protocol === 'TLS 1.3') {
-      payloadText = `\x16\x03\x03\x00\x45\x01\x00\x00\x41\x03\x03TLS13_CLIENT_HELLO_CHACHA_POLY1305_SNI_SYSTEMSLAB_DEV`;
-    } else if (step.phase === 'HTTP') {
-      payloadText = `GET /v1/metrics HTTP/2\r\nHost: api.systemslab.dev\r\nUser-Agent: Browser/1.0\r\nAccept: */*\r\n\r\n`;
-    }
-
-    const appBytes: number[] = [];
-    for (let i = 0; i < Math.min(payloadText.length, 64); i++) {
-      appBytes.push(payloadText.charCodeAt(i) & 0xff);
-    }
-    bytes.push(...appBytes);
-    const appRange: [number, number] = [appStart, bytes.length];
-
-    return { bytes, ethRange, ipRange, l4Range, appRange };
-  };
-
-  const { bytes, ethRange, ipRange, l4Range, appRange } = generatePacketBytes();
+  const { bytes, ethRange, ipRange, l4Range } = useMemo(
+    () => generatePacketBytes(step, dnsRecordType),
+    [step, dnsRecordType]
+  );
 
   const getByteLayer = (idx: number): 'eth' | 'ip' | 'l4' | 'app' => {
     if (idx < ethRange[1]) return 'eth';

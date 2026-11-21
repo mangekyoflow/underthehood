@@ -14,6 +14,27 @@ interface QueryTrackViewProps {
   onSelectModule?: (id: QueryModuleId) => void;
 }
 
+const QUERY_MODULES = [
+  {
+    id: 'lsm-tree' as QueryModuleId,
+    num: '04',
+    title: 'LSM-Tree Simulator',
+    desc: 'RocksDB & Cassandra storage engines',
+  },
+  {
+    id: 'bplus-tree' as QueryModuleId,
+    num: '05',
+    title: 'B+ Tree Node Splitter',
+    desc: 'Relational indexing & page splits',
+  },
+  {
+    id: 'acid-isolation' as QueryModuleId,
+    num: '06',
+    title: 'ACID & Isolation Levels',
+    desc: 'Concurrency anomalies & MVCC',
+  },
+] as const;
+
 export const QueryTrackView: React.FC<QueryTrackViewProps> = ({
   initialModuleId = 'lsm-tree',
   progress,
@@ -26,28 +47,7 @@ export const QueryTrackView: React.FC<QueryTrackViewProps> = ({
     if (initialModuleId && initialModuleId !== activeModule) {
       setActiveModule(initialModuleId);
     }
-  }, [initialModuleId]);
-
-  const modules = [
-    {
-      id: 'lsm-tree' as QueryModuleId,
-      num: '04',
-      title: 'LSM-Tree Simulator',
-      desc: 'RocksDB & Cassandra storage engines',
-    },
-    {
-      id: 'bplus-tree' as QueryModuleId,
-      num: '05',
-      title: 'B+ Tree Node Splitter',
-      desc: 'Relational indexing & page splits',
-    },
-    {
-      id: 'acid-isolation' as QueryModuleId,
-      num: '06',
-      title: 'ACID & Isolation Levels',
-      desc: 'Concurrency anomalies & MVCC',
-    },
-  ];
+  }, [initialModuleId, activeModule]);
 
   const handleSelect = (id: QueryModuleId) => {
     playTick();
@@ -77,7 +77,7 @@ export const QueryTrackView: React.FC<QueryTrackViewProps> = ({
 
         {/* Submodule Segmented Pills */}
         <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto touch-scroll no-scrollbar max-w-full shrink-0">
-          {modules.map((m) => {
+          {QUERY_MODULES.map((m) => {
             const isActive = activeModule === m.id;
             return (
               <button

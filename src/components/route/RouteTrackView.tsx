@@ -17,6 +17,33 @@ interface RouteTrackViewProps {
   onSelectModule?: (id: RouteModuleId) => void;
 }
 
+const ROUTE_MODULES = [
+  {
+    id: 'url-lifecycle' as RouteModuleId,
+    num: '01',
+    title: 'The Life of a URL Request',
+    desc: 'DNS, TCP, TLS 1.3 & HTTP stack',
+  },
+  {
+    id: 'tcp-congestion' as RouteModuleId,
+    num: '02',
+    title: 'TCP Congestion Control',
+    desc: 'Reno vs BBR, cwnd, and bufferbloat',
+  },
+  {
+    id: 'http-race' as RouteModuleId,
+    num: '03',
+    title: 'HTTP/1.1 vs HTTP/2 vs HTTP/3',
+    desc: 'Multiplexing & Head-of-Line blocking',
+  },
+  {
+    id: 'napkin-math' as RouteModuleId,
+    num: '04',
+    title: 'Napkin Math Capacity',
+    desc: 'Order-of-magnitude systems sizing',
+  },
+] as const;
+
 export const RouteTrackView: React.FC<RouteTrackViewProps> = ({
   initialModuleId = 'url-lifecycle',
   initialStep,
@@ -31,34 +58,7 @@ export const RouteTrackView: React.FC<RouteTrackViewProps> = ({
     if (initialModuleId && initialModuleId !== activeModule) {
       setActiveModule(initialModuleId);
     }
-  }, [initialModuleId]);
-
-  const modules = [
-    {
-      id: 'url-lifecycle' as RouteModuleId,
-      num: '01',
-      title: 'The Life of a URL Request',
-      desc: 'DNS, TCP, TLS 1.3 & HTTP stack',
-    },
-    {
-      id: 'tcp-congestion' as RouteModuleId,
-      num: '02',
-      title: 'TCP Congestion Control',
-      desc: 'Reno vs BBR, cwnd, and bufferbloat',
-    },
-    {
-      id: 'http-race' as RouteModuleId,
-      num: '03',
-      title: 'HTTP/1.1 vs HTTP/2 vs HTTP/3',
-      desc: 'Multiplexing & Head-of-Line blocking',
-    },
-    {
-      id: 'napkin-math' as RouteModuleId,
-      num: '04',
-      title: 'Napkin Math Capacity',
-      desc: 'Order-of-magnitude systems sizing',
-    },
-  ];
+  }, [initialModuleId, activeModule]);
 
   const handleSelect = (id: RouteModuleId) => {
     playTick();
@@ -88,7 +88,7 @@ export const RouteTrackView: React.FC<RouteTrackViewProps> = ({
 
         {/* Submodule Segmented Pills */}
         <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto touch-scroll no-scrollbar max-w-full shrink-0">
-          {modules.map((m) => {
+          {ROUTE_MODULES.map((m) => {
             const isActive = activeModule === m.id;
             return (
               <button

@@ -1,10 +1,4 @@
-import {
-  IsolationLevel,
-  AnomalyScenarioId,
-  DatabaseRow,
-  TransactionStep,
-  TransactionState,
-} from '../../types/query';
+import { IsolationLevel, AnomalyScenarioId, DatabaseRow, TransactionStep } from '../../types/query';
 
 export interface ScenarioDefinition {
   id: AnomalyScenarioId;

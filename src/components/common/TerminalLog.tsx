@@ -10,6 +10,14 @@ export interface LogEntry {
   message: string;
 }
 
+const LOG_LEVEL_COLORS: Record<LogEntry['level'], string> = {
+  info: 'text-ink-light dark:text-ink-dark',
+  debug: 'text-ink-muted dark:text-ink-darkMuted',
+  warn: 'text-amber-600 dark:text-amber-400',
+  error: 'text-rose-600 dark:text-rose-400',
+  success: 'text-emerald-600 dark:text-emerald-400',
+};
+
 interface TerminalLogProps {
   logs: LogEntry[];
   onClear?: () => void;
@@ -41,14 +49,6 @@ export const TerminalLog: React.FC<TerminalLogProps> = ({
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const levelColor = {
-    info: 'text-ink-light dark:text-ink-dark',
-    debug: 'text-ink-muted dark:text-ink-darkMuted',
-    warn: 'text-amber-600 dark:text-amber-400',
-    error: 'text-rose-600 dark:text-rose-400',
-    success: 'text-emerald-600 dark:text-emerald-400',
   };
 
   return (
@@ -108,7 +108,7 @@ export const TerminalLog: React.FC<TerminalLogProps> = ({
               <span className="px-1 py-0.2 rounded bg-parchment-200 dark:bg-parchment-900 border border-parchment-300 dark:border-parchment-800 text-[10px] text-ink-muted dark:text-ink-darkMuted uppercase shrink-0 font-semibold">
                 {log.category}
               </span>
-              <span className={clsx('break-all', levelColor[log.level])}>{log.message}</span>
+              <span className={clsx('break-all', LOG_LEVEL_COLORS[log.level])}>{log.message}</span>
             </div>
           ))
         )}

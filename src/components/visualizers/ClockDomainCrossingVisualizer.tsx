@@ -1,27 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  Clock,
-  Zap,
-  ShieldAlert,
-  CheckCircle2,
-  AlertTriangle,
-  Play,
-  Pause,
-  RotateCcw,
-  ArrowRight,
-  Layers,
-  Sliders,
-  Gauge,
-  Binary,
-  HelpCircle,
-  Activity,
-  Sparkles,
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Zap, AlertTriangle, RotateCcw } from 'lucide-react';
 import { playTick, playSuccess, playAlert } from '../../lib/sound';
 import { ChallengeCard } from '../common/ChallengeCard';
 import { ExplanationDrawer } from '../common/ExplanationDrawer';
 import { MODULES } from '../../data/modulesData';
-import { SynchronizerType, FifoEntry } from '../../types/silicon';
+import { SynchronizerType } from '../../types/silicon';
 import clsx from 'clsx';
 
 interface ClockDomainCrossingVisualizerProps {
@@ -50,7 +33,6 @@ export const ClockDomainCrossingVisualizer: React.FC<ClockDomainCrossingVisualiz
   const [fifoCapacity, setFifoCapacity] = useState<number>(8); // 2, 4, 8, 16
 
   // Simulation State
-  const [isSimulating, setIsSimulating] = useState<boolean>(true);
   const [cycleCount, setCycleCount] = useState<number>(0);
   const [isMetastable, setIsMetastable] = useState<boolean>(false);
   const [metastableEventsCount, setMetastableEventsCount] = useState<number>(0);
@@ -65,7 +47,6 @@ export const ClockDomainCrossingVisualizer: React.FC<ClockDomainCrossingVisualiz
   const [waveClkA, setWaveClkA] = useState<number[]>([]);
   const [waveClkB, setWaveClkB] = useState<number[]>([]);
   const [waveData, setWaveData] = useState<number[]>([]);
-  const [hazardTriggered, setHazardTriggered] = useState<boolean>(false);
 
   // Burst Transmission
   const [burstActive, setBurstActive] = useState<boolean>(false);
@@ -73,7 +54,6 @@ export const ClockDomainCrossingVisualizer: React.FC<ClockDomainCrossingVisualiz
   // Trigger Setup/Hold Hazard
   const handleInjectHazard = () => {
     playAlert();
-    setHazardTriggered(true);
 
     if (synchronizer === 'none') {
       setIsMetastable(true);
@@ -89,8 +69,6 @@ export const ClockDomainCrossingVisualizer: React.FC<ClockDomainCrossingVisualiz
       // Async FIFO completely absorbs hazard
       setIsMetastable(false);
     }
-
-    setTimeout(() => setHazardTriggered(false), 800);
   };
 
   // Trigger Burst Data
@@ -215,7 +193,6 @@ export const ClockDomainCrossingVisualizer: React.FC<ClockDomainCrossingVisualiz
     setIsMetastable(false);
     setMetastableEventsCount(0);
     setDataCorruptionCount(0);
-    setHazardTriggered(false);
   };
 
   return (

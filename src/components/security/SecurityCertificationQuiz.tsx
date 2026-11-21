@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
-import {
-  ShieldCheck,
-  HelpCircle,
-  CheckCircle2,
-  XCircle,
-  RotateCcw,
-  Award,
-  ArrowRight,
-  Sparkles,
-} from 'lucide-react';
+import { CheckCircle2, XCircle, RotateCcw, Award, ArrowRight } from 'lucide-react';
 import { Badge } from '../common/Badge';
 import { playSuccess, playTick, playAlert } from '../../lib/sound';
 import confetti from 'canvas-confetti';

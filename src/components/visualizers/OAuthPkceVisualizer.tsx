@@ -8,22 +8,78 @@ import {
   ArrowRight,
   RefreshCw,
   AlertTriangle,
-  CheckCircle2,
   Play,
   Pause,
-  Sparkles,
-  Lock,
-  Unlock,
-  Send,
-  Server,
 } from 'lucide-react';
 import { MetricCard } from '../common/MetricCard';
-import { playTick, playSuccess, playAlert } from '../../lib/sound';
+import { playTick, playAlert } from '../../lib/sound';
 import clsx from 'clsx';
 
 interface Props {
   currentStep?: number;
   onSelectStep?: (step: number) => void;
+}
+
+function getStepDescriptions(
+  challenge: string,
+  attackerIntercepts: boolean,
+  pkceEnabled: boolean,
+  currentStep: number
+) {
+  return [
+    {
+      title: 'Step 1: In-Memory Secret & Hash Generation',
+      detail:
+        'Client generates high-entropy code_verifier in RAM and computes code_challenge = SHA256(verifier).',
+      source: 'Client (Private RAM)',
+      target: 'Client Local Memory',
+      payload: `code_verifier [43 chars] -> SHA-256`,
+    },
+    {
+      title: 'Step 2: Authorization Request via Browser Redirect',
+      detail: 'Client redirects user to IdP /authorize with code_challenge and client_id.',
+      source: 'Client',
+      target: 'Auth Server (IdP)',
+      payload: `GET /authorize?code_challenge=${challenge.substring(0, 16)}...`,
+    },
+    {
+      title: 'Step 3: User Consent & Ephemeral Auth Code Issued',
+      detail:
+        'IdP records challenge, validates credentials, and redirects back to Client callback with Auth Code.',
+      source: 'Auth Server (IdP)',
+      target: 'Client Callback',
+      payload: `HTTP 302 -> /callback?code=AUTH_CODE_771`,
+    },
+    {
+      title: 'Step 4: Threat Simulation — Interception Window',
+      detail: attackerIntercepts
+        ? 'Rogue app / malicious URI listener sniffs code=AUTH_CODE_771 from browser redirect!'
+        : 'Auth code arrives at client; attacker is passively monitoring redirect URI scheme.',
+      source: 'OS Redirect URI Handler',
+      target: attackerIntercepts ? 'Rogue Attacker App' : 'Legitimate Client',
+      payload: `Sniffed: code=AUTH_CODE_771`,
+    },
+    {
+      title: 'Step 5: Token Exchange with Verifier Proof',
+      detail:
+        'Client posts code PLUS raw unhashed code_verifier. IdP computes SHA256(verifier) === stored_challenge.',
+      source: 'Client App',
+      target: 'Auth Server (IdP)',
+      payload: `POST /token { code, code_verifier }`,
+    },
+    {
+      title: 'Step 6: Token Issued & Protected API Access',
+      detail:
+        pkceEnabled && (!attackerIntercepts || currentStep !== 4)
+          ? 'Hash matched! Access token issued. Legitimate client queries Resource API.'
+          : !pkceEnabled && attackerIntercepts
+            ? 'CRITICAL EXPLOIT: Without PKCE, attacker exchanged stolen code for your access token!'
+            : 'Access token issued to authenticated client.',
+      source: 'Auth Server (IdP)',
+      target: 'Resource API Server',
+      payload: `Bearer eyJhbGciOi...`,
+    },
+  ];
 }
 
 export const OAuthPkceVisualizer: React.FC<Props> = ({
@@ -82,60 +138,12 @@ export const OAuthPkceVisualizer: React.FC<Props> = ({
     onSelectStep?.(step);
   };
 
-  const stepDescriptions = [
-    {
-      title: 'Step 1: In-Memory Secret & Hash Generation',
-      detail:
-        'Client generates high-entropy code_verifier in RAM and computes code_challenge = SHA256(verifier).',
-      source: 'Client (Private RAM)',
-      target: 'Client Local Memory',
-      payload: `code_verifier [43 chars] -> SHA-256`,
-    },
-    {
-      title: 'Step 2: Authorization Request via Browser Redirect',
-      detail: 'Client redirects user to IdP /authorize with code_challenge and client_id.',
-      source: 'Client',
-      target: 'Auth Server (IdP)',
-      payload: `GET /authorize?code_challenge=${challenge.substring(0, 16)}...`,
-    },
-    {
-      title: 'Step 3: User Consent & Ephemeral Auth Code Issued',
-      detail:
-        'IdP records challenge, validates credentials, and redirects back to Client callback with Auth Code.',
-      source: 'Auth Server (IdP)',
-      target: 'Client Callback',
-      payload: `HTTP 302 -> /callback?code=AUTH_CODE_771`,
-    },
-    {
-      title: 'Step 4: Threat Simulation — Interception Window',
-      detail: attackerIntercepts
-        ? 'Rogue app / malicious URI listener sniffs code=AUTH_CODE_771 from browser redirect!'
-        : 'Auth code arrives at client; attacker is passively monitoring redirect URI scheme.',
-      source: 'OS Redirect URI Handler',
-      target: attackerIntercepts ? 'Rogue Attacker App' : 'Legitimate Client',
-      payload: `Sniffed: code=AUTH_CODE_771`,
-    },
-    {
-      title: 'Step 5: Token Exchange with Verifier Proof',
-      detail:
-        'Client posts code PLUS raw unhashed code_verifier. IdP computes SHA256(verifier) === stored_challenge.',
-      source: 'Client App',
-      target: 'Auth Server (IdP)',
-      payload: `POST /token { code, code_verifier }`,
-    },
-    {
-      title: 'Step 6: Token Issued & Protected API Access',
-      detail:
-        pkceEnabled && (!attackerIntercepts || currentStep !== 4)
-          ? 'Hash matched! Access token issued. Legitimate client queries Resource API.'
-          : !pkceEnabled && attackerIntercepts
-            ? 'CRITICAL EXPLOIT: Without PKCE, attacker exchanged stolen code for your access token!'
-            : 'Access token issued to authenticated client.',
-      source: 'Auth Server (IdP)',
-      target: 'Resource API Server',
-      payload: `Bearer eyJhbGciOi...`,
-    },
-  ];
+  const stepDescriptions = getStepDescriptions(
+    challenge,
+    attackerIntercepts,
+    pkceEnabled,
+    currentStep
+  );
 
   const activeDesc = stepDescriptions[currentStep] || stepDescriptions[0];
 

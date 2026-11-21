@@ -9,6 +9,12 @@ interface TcpLiveChartProps {
   className?: string;
 }
 
+const CHART_WIDTH = 600;
+const CHART_HEIGHT = 180;
+const CHART_PADDING = { top: 20, right: 30, bottom: 25, left: 45 } as const;
+const CHART_W = CHART_WIDTH - CHART_PADDING.left - CHART_PADDING.right;
+const CHART_H = CHART_HEIGHT - CHART_PADDING.top - CHART_PADDING.bottom;
+
 export const TcpLiveChart: React.FC<TcpLiveChartProps> = ({
   data,
   metric,
@@ -23,12 +29,11 @@ export const TcpLiveChart: React.FC<TcpLiveChartProps> = ({
     );
   }
 
-  const width = 600;
-  const height = 180;
-  const padding = { top: 20, right: 30, bottom: 25, left: 45 };
-
-  const chartW = width - padding.left - padding.right;
-  const chartH = height - padding.top - padding.bottom;
+  const width = CHART_WIDTH;
+  const height = CHART_HEIGHT;
+  const padding = CHART_PADDING;
+  const chartW = CHART_W;
+  const chartH = CHART_H;
 
   let maxVal = 10;
   if (metric === 'cwnd') {

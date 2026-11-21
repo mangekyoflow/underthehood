@@ -1,28 +1,26 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import {
-  Cpu,
-  Play,
-  Pause,
-  SkipForward,
-  RotateCcw,
-  AlertTriangle,
-  CheckCircle2,
-  XCircle,
-  Sliders,
-  CheckSquare,
-  Layers,
-  Terminal,
-  ShieldCheck,
-  Sparkles,
-  Binary,
-  BarChart3,
-} from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Play, Pause, SkipForward, RotateCcw, CheckCircle2, XCircle, Terminal } from 'lucide-react';
 import { playTick, playSuccess, playAlert } from '../../lib/sound';
 import { ChallengeCard } from '../common/ChallengeCard';
 import { ExplanationDrawer } from '../common/ExplanationDrawer';
 import { MODULES } from '../../data/modulesData';
 import { AluOpcode, UvmTransaction, CoverageBin } from '../../types/silicon';
 import clsx from 'clsx';
+
+// Hardware Device Under Test (DUT RTL with optional Silicon Bug)
+function computeDutAlu(
+  op: AluOpcode,
+  a: number,
+  b: number,
+  goldenRes: number,
+  isOverflow: boolean,
+  hasSiliconBug: boolean
+): number {
+  if (hasSiliconBug && op === 'ADD' && isOverflow && (a === 0x7fffffff || b === 0x7fffffff)) {
+    return (goldenRes ^ 0x000000ff) >>> 0;
+  }
+  return goldenRes;
+}
 
 interface UvmTestbenchVisualizerProps {
   onChallengeComplete?: (id: string) => void;
@@ -206,22 +204,6 @@ export const UvmTestbenchVisualizer: React.FC<UvmTestbenchVisualizerProps> = ({
     return { result, overflow };
   };
 
-  // Hardware Device Under Test (DUT RTL with optional Silicon Bug)
-  const computeDutAlu = (
-    op: AluOpcode,
-    a: number,
-    b: number,
-    goldenRes: number,
-    isOverflow: boolean
-  ) => {
-    // If silicon bug is active, ALU miscalculates signed overflow on (0x7FFFFFFF + 0x00000001)
-    if (hasSiliconBug && op === 'ADD' && isOverflow && (a === 0x7fffffff || b === 0x7fffffff)) {
-      // Hardware Bug: Silicon designer inverted MSB carry output during overflow!
-      return (goldenRes ^ 0x000000ff) >>> 0;
-    }
-    return goldenRes;
-  };
-
   // Step 1 Cycle / 1 Transaction
   const executeCycle = useCallback(() => {
     setClockCycle((c) => c + 1);
@@ -262,7 +244,7 @@ export const UvmTestbenchVisualizer: React.FC<UvmTestbenchVisualizerProps> = ({
     }
 
     const { result: expectedResult, overflow: hasOverflow } = computeGoldenAlu(op, a, b);
-    const dutResult = computeDutAlu(op, a, b, expectedResult, hasOverflow);
+    const dutResult = computeDutAlu(op, a, b, expectedResult, hasOverflow, hasSiliconBug);
 
     const isMatch = dutResult === expectedResult;
     const status = isMatch ? 'PASS' : 'FAIL';

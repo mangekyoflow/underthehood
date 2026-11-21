@@ -1,14 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Globe,
   Laptop,
   Server,
-  ShieldCheck,
   Database,
   HardDrive,
   ArrowRight,
-  CheckCircle2,
-  RotateCcw,
   AlertTriangle,
   Cpu,
   Layers,
@@ -18,7 +15,6 @@ import {
   Zap,
   Network,
   Binary,
-  BarChart3,
   ChevronDown,
   ChevronUp,
   Lightbulb,
@@ -728,89 +724,91 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
     if (protocolMode === 'HTTP') {
       onChallengeComplete('challenge-url-2');
     }
-  }, [currentStepIdx, currentStep, dnsCacheMode, protocolMode]);
+  }, [currentStepIdx, currentStep, dnsCacheMode, protocolMode, onChallengeComplete]);
 
   // Cumulative latency calculation
   const cumulativeLatency = steps
     .slice(0, currentStepIdx + 1)
     .reduce((acc, s) => acc + s.latencyMs, 0);
-  const totalSimulatedLatency = steps.reduce((acc, s) => acc + s.latencyMs, 0);
 
   // Node layout map for visual diagram
-  const nodes = [
-    {
-      id: 'browser',
-      label: 'Client Browser',
-      sub: '192.168.1.105',
-      icon: Laptop,
-      x: 10,
-      y: 30,
-      color: 'text-cyan-400',
-    },
-    {
-      id: 'os-resolver',
-      label: 'OS Resolver',
-      sub: '127.0.0.1:53',
-      icon: Cpu,
-      x: 28,
-      y: 75,
-      color: 'text-sky-400',
-    },
-    {
-      id: 'recursive-dns',
-      label: 'Recursive DNS',
-      sub: '8.8.8.8:53',
-      icon: Network,
-      x: 48,
-      y: 75,
-      color: 'text-blue-400',
-    },
-    {
-      id: 'root-dns',
-      label: 'Root DNS (.)',
-      sub: '198.41.0.4',
-      icon: Globe,
-      x: 68,
-      y: 88,
-      color: 'text-indigo-400',
-    },
-    {
-      id: 'tld-dns',
-      label: 'TLD (.dev)',
-      sub: '192.5.6.30',
-      icon: Server,
-      x: 86,
-      y: 88,
-      color: 'text-violet-400',
-    },
-    {
-      id: 'auth-dns',
-      label: 'Authoritative DNS',
-      sub: 'systemslab.dev',
-      icon: Database,
-      x: 92,
-      y: 62,
-      color: 'text-purple-400',
-    },
-    {
-      id: 'web-server',
-      label: 'Edge Web Server',
-      sub: targetServerIp,
-      icon: Server,
-      x: 65,
-      y: 20,
-      color: 'text-emerald-400',
-    },
-    {
-      id: 'app-engine',
-      label: 'Backend / DB',
-      sub: '10.0.4.18:5432',
-      icon: HardDrive,
-      x: 90,
-      y: 20,
-      color: 'text-amber-400',
-    },
-  ];
+  const nodes = useMemo(
+    () => [
+      {
+        id: 'browser',
+        label: 'Client Browser',
+        sub: '192.168.1.105',
+        icon: Laptop,
+        x: 10,
+        y: 30,
+        color: 'text-cyan-400',
+      },
+      {
+        id: 'os-resolver',
+        label: 'OS Resolver',
+        sub: '127.0.0.1:53',
+        icon: Cpu,
+        x: 28,
+        y: 75,
+        color: 'text-sky-400',
+      },
+      {
+        id: 'recursive-dns',
+        label: 'Recursive DNS',
+        sub: '8.8.8.8:53',
+        icon: Network,
+        x: 48,
+        y: 75,
+        color: 'text-blue-400',
+      },
+      {
+        id: 'root-dns',
+        label: 'Root DNS (.)',
+        sub: '198.41.0.4',
+        icon: Globe,
+        x: 68,
+        y: 88,
+        color: 'text-indigo-400',
+      },
+      {
+        id: 'tld-dns',
+        label: 'TLD (.dev)',
+        sub: '192.5.6.30',
+        icon: Server,
+        x: 86,
+        y: 88,
+        color: 'text-violet-400',
+      },
+      {
+        id: 'auth-dns',
+        label: 'Authoritative DNS',
+        sub: 'systemslab.dev',
+        icon: Database,
+        x: 92,
+        y: 62,
+        color: 'text-purple-400',
+      },
+      {
+        id: 'web-server',
+        label: 'Edge Web Server',
+        sub: targetServerIp,
+        icon: Server,
+        x: 65,
+        y: 20,
+        color: 'text-emerald-400',
+      },
+      {
+        id: 'app-engine',
+        label: 'Backend / DB',
+        sub: '10.0.4.18:5432',
+        icon: HardDrive,
+        x: 90,
+        y: 20,
+        color: 'text-amber-400',
+      },
+    ],
+    [targetServerIp]
+  );
 
   const activeSource = nodes.find((n) => n.id === currentStep?.sourceNode);
   const activeTarget = nodes.find((n) => n.id === currentStep?.targetNode);

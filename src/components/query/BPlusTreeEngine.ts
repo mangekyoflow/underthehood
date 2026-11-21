@@ -87,10 +87,10 @@ export function insertKey(
     splitOccurred = true;
     let nodeToSplit: BPlusNode | null = curr;
     let promotedKey: number | null = null;
-    let newSibling: BPlusNode | null = null;
 
     while (nodeToSplit && nodeToSplit.keys.length > maxKeys) {
       const mid = Math.floor(nodeToSplit.keys.length / 2);
+      let newSibling: BPlusNode;
 
       if (nodeToSplit.isLeaf) {
         promotedKey = nodeToSplit.keys[mid];

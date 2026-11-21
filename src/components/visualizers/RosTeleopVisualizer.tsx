@@ -1,27 +1,14 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  Gamepad2,
-  Wifi,
-  WifiOff,
-  Activity,
   AlertTriangle,
-  CheckCircle2,
-  Play,
-  Pause,
   RotateCcw,
   ArrowUp,
   ArrowDown,
   ArrowLeft,
   ArrowRight,
-  ShieldAlert,
-  Radio,
-  Gauge,
   Terminal,
-  Video,
-  RefreshCw,
-  Zap,
 } from 'lucide-react';
-import { playTick, playSuccess, playAlert } from '../../lib/sound';
+import { playTick, playSuccess } from '../../lib/sound';
 import { ChallengeCard } from '../common/ChallengeCard';
 import { ExplanationDrawer } from '../common/ExplanationDrawer';
 import { MODULES } from '../../data/modulesData';
@@ -32,18 +19,6 @@ interface RosTeleopVisualizerProps {
   onChallengeComplete?: (id: string) => void;
   completedChallenges?: Record<string, boolean>;
   tutorialAction?: { actionType: string; params: any; timestamp: number } | null;
-}
-
-interface SimulatedRosMessage {
-  id: number;
-  seq: number;
-  topic: '/cmd_vel' | '/odom' | '/camera/compressed';
-  source: 'teleop' | 'robot';
-  timestamp: number;
-  linearX: number;
-  angularZ: number;
-  status: 'in-flight' | 'delivered' | 'dropped' | 'queued';
-  latencyMs: number;
 }
 
 export const RosTeleopVisualizer: React.FC<RosTeleopVisualizerProps> = ({
@@ -70,11 +45,11 @@ export const RosTeleopVisualizer: React.FC<RosTeleopVisualizerProps> = ({
     y: 150,
     theta: 0,
   });
-  const [targetGoal, setTargetGoal] = useState<{ x: number; y: number }>({ x: 280, y: 100 });
+  const [targetGoal] = useState<{ x: number; y: number }>({ x: 280, y: 100 });
 
   // Telemetry Metrics
   const [packetsSent, setPacketsSent] = useState<number>(0);
-  const [packetsDelivered, setPacketsDelivered] = useState<number>(0);
+  const [, setPacketsDelivered] = useState<number>(0);
   const [packetsDropped, setPacketsDropped] = useState<number>(0);
   const [bufferbloatMs, setBufferbloatMs] = useState<number>(0);
   const [queueLength, setQueueLength] = useState<number>(0);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   ShieldCheck,
   Moon,
@@ -10,16 +10,47 @@ import {
   ChevronDown,
   Route,
   Database,
-  Compass,
-  CheckCircle2,
   Volume2,
   VolumeX,
   Bot,
   Microchip,
+  Download,
+  WifiOff,
+  Sparkles,
 } from 'lucide-react';
 import { NavigationTab } from '../types';
 import { Language, TRANSLATIONS } from '../i18n/translations';
 import { toggleSound, isSoundEnabled, playTick } from '../lib/sound';
+import { usePWA } from '../lib/pwa';
+
+interface LanguageOption {
+  code: Language;
+  label: string;
+  flag: string;
+}
+
+const LANGUAGES: readonly LanguageOption[] = [
+  { code: 'en', label: 'English', flag: '🇺🇸' },
+  { code: 'es', label: 'Español', flag: '🇪🇸' },
+  { code: 'ja', label: '日本語', flag: '🇯🇵' },
+  { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
+  { code: 'fr', label: 'Français', flag: '🇫🇷' },
+] as const;
+
+interface SuiteTabConfig {
+  id: NavigationTab;
+  labelKey: 'tabSecurity' | 'tabRoute' | 'tabQuery' | 'tabActuate' | 'tabSilicon';
+  icon: typeof ShieldCheck;
+  badge?: string;
+}
+
+const SUITE_TABS_CONFIG: readonly SuiteTabConfig[] = [
+  { id: 'security', labelKey: 'tabSecurity', icon: ShieldCheck, badge: '23' },
+  { id: 'route', labelKey: 'tabRoute', icon: Route, badge: '4' },
+  { id: 'query', labelKey: 'tabQuery', icon: Database, badge: '3' },
+  { id: 'actuate', labelKey: 'tabActuate', icon: Bot, badge: '3' },
+  { id: 'silicon', labelKey: 'tabSilicon', icon: Microchip, badge: '2' },
+] as const;
 
 interface Props {
   currentSuiteTab: NavigationTab;
@@ -47,7 +78,20 @@ export const Header: React.FC<Props> = ({
   onResetHome,
 }) => {
   const [soundOn, setSoundOn] = useState(isSoundEnabled());
+  const { isInstallable, isInstalled, isOffline, hasUpdate, installApp, updateApp } = usePWA();
+  const [isInstalling, setIsInstalling] = useState(false);
   const t = TRANSLATIONS[lang];
+
+  const handleInstallClick = async () => {
+    if (isInstalling) return;
+    setIsInstalling(true);
+    playTick();
+    try {
+      await installApp();
+    } finally {
+      setIsInstalling(false);
+    }
+  };
 
   const handleToggleSound = () => {
     const newState = toggleSound();
@@ -55,26 +99,16 @@ export const Header: React.FC<Props> = ({
     if (newState) playTick();
   };
 
-  const languages: { code: Language; label: string; flag: string }[] = [
-    { code: 'en', label: 'English', flag: '🇺🇸' },
-    { code: 'es', label: 'Español', flag: '🇪🇸' },
-    { code: 'ja', label: '日本語', flag: '🇯🇵' },
-    { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
-    { code: 'fr', label: 'Français', flag: '🇫🇷' },
-  ];
-
-  const suiteTabs: { id: NavigationTab; label: string; icon: React.ReactNode; badge?: string }[] = [
-    {
-      id: 'security',
-      label: t.tabSecurity,
-      icon: <ShieldCheck className="w-3.5 h-3.5" />,
-      badge: '23',
-    },
-    { id: 'route', label: t.tabRoute, icon: <Route className="w-3.5 h-3.5" />, badge: '4' },
-    { id: 'query', label: t.tabQuery, icon: <Database className="w-3.5 h-3.5" />, badge: '3' },
-    { id: 'actuate', label: t.tabActuate, icon: <Bot className="w-3.5 h-3.5" />, badge: '3' },
-    { id: 'silicon', label: t.tabSilicon, icon: <Microchip className="w-3.5 h-3.5" />, badge: '2' },
-  ];
+  const suiteTabs = useMemo(
+    () =>
+      SUITE_TABS_CONFIG.map((tab) => ({
+        id: tab.id,
+        label: t[tab.labelKey],
+        icon: <tab.icon className="w-3.5 h-3.5" />,
+        badge: tab.badge,
+      })),
+    [t]
+  );
 
   return (
     <header className="sticky top-0 z-30 w-full backdrop-blur-md bg-parchment-100/95 dark:bg-parchment-950/95 border-b border-parchment-200 dark:border-parchment-800 transition-colors shadow-xs pt-[env(safe-area-inset-top,0px)]">
@@ -184,8 +218,35 @@ export const Header: React.FC<Props> = ({
           })}
         </nav>
 
-        {/* Right: Sound, Search, Language, Theme */}
+        {/* Right: Sound, Search, Language, Theme, PWA */}
         <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+          {/* Offline Status Badge */}
+          {isOffline && (
+            <div
+              className="flex items-center gap-1 sm:gap-1.5 px-2 py-1 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[11px] font-mono min-h-[36px]"
+              title="You are currently offline. Under The Hood works offline with cached content."
+              role="status"
+            >
+              <WifiOff className="w-3.5 h-3.5 flex-shrink-0" />
+              <span className="hidden xl:inline">{t.offlineMode}</span>
+            </div>
+          )}
+
+          {/* Progressive Web App Install Button (Visible when installation is supported) */}
+          {isInstallable && !isInstalled && (
+            <button
+              onClick={handleInstallClick}
+              disabled={isInstalling}
+              aria-disabled={isInstalling}
+              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-medium transition-all shadow-xs cursor-pointer min-h-[36px]"
+              title="Install Under The Hood as a standalone app"
+              aria-label={t.installApp}
+            >
+              <Download className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+              <span className="hidden md:inline">{t.installApp}</span>
+            </button>
+          )}
+
           {/* Search Trigger Button */}
           <button
             onClick={() => {
@@ -226,7 +287,7 @@ export const Header: React.FC<Props> = ({
               title="Select Language / Idioma / 言語"
               aria-label="Select Language"
             >
-              {languages.map((l) => (
+              {LANGUAGES.map((l) => (
                 <option key={l.code} value={l.code}>
                   {l.flag} <span className="hidden sm:inline">{l.code.toUpperCase()}</span>
                 </option>
@@ -300,6 +361,26 @@ export const Header: React.FC<Props> = ({
           );
         })}
       </div>
+
+      {/* Service Worker Update Toast Notification */}
+      {hasUpdate && (
+        <div
+          role="alert"
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-parchment-900 border border-emerald-500/60 shadow-2xl animate-fade-in text-xs font-mono"
+        >
+          <Sparkles className="w-4 h-4 text-emerald-500 shrink-0" />
+          <span className="text-ink-light dark:text-ink-dark font-medium">{t.updateAvailable}</span>
+          <button
+            onClick={() => {
+              playTick();
+              updateApp();
+            }}
+            className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer transition-colors"
+          >
+            {t.reload}
+          </button>
+        </div>
+      )}
     </header>
   );
 };

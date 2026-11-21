@@ -1,22 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
   ShieldCheck,
-  ShieldAlert,
   Cookie,
   Send,
-  ArrowRight,
   ExternalLink,
-  Laptop,
   Server,
-  AlertTriangle,
-  CheckCircle2,
   Play,
   Pause,
   RotateCcw,
-  Sparkles,
   Lock,
-  Unlock,
-  Globe,
   Radio,
 } from 'lucide-react';
 import { MetricCard } from '../common/MetricCard';
@@ -28,6 +20,54 @@ interface Props {
   onSelectStep?: (step: number) => void;
 }
 
+const CSRF_STEPS = [
+  {
+    title: 'Step 1: The Victim Logs into Bank.com',
+    detail:
+      'The user logs into their online bank, receiving an authenticated session cookie (session_id=bank_99812). The browser stores it in the cookie jar.',
+    source: 'User Browser (Tab 1)',
+    target: 'Bank Server',
+    payload: 'Set-Cookie: session_id=bank_99812; Secure; HttpOnly',
+    badge: 'Legitimate Session Set',
+  },
+  {
+    title: 'Step 2: The Victim Visits Evil-Attacker.com',
+    detail:
+      'In a separate tab, the victim visits an untrusted site containing a hidden form with script: <form action="https://mybank.com/transfer" method="POST">.',
+    source: 'Evil Malicious Origin',
+    target: 'User Browser (Tab 2)',
+    payload: 'Hidden POST Form -> Auto-submit script triggered',
+    badge: 'Hidden Form Injected',
+  },
+  {
+    title: 'Step 3: Ambient Cookie Attachment (Vulnerability)',
+    detail:
+      'With SameSite=None, legacy browsers automatically attached the stored banking cookie to the cross-site POST. The bank executes the transfer!',
+    source: 'User Browser (Tab 2)',
+    target: 'Bank Server',
+    payload: 'POST /transfer { amount: 5000, to: attacker } + Cookie: session_id',
+    badge: 'Cross-Site POST Forged',
+  },
+  {
+    title: 'Step 4: SameSite Cookie Defense (Lax/Strict)',
+    detail:
+      'With SameSite=Lax or Strict, the browser inspects the cross-site origin and completely strips the session cookie from the cross-origin POST!',
+    source: 'Browser Engine Sandbox',
+    target: 'Target Bank Server',
+    payload: 'POST /transfer (Cookie stripped by Browser!) -> 401 Unauthorized',
+    badge: 'SameSite Cookie Stripped',
+  },
+  {
+    title: 'Step 5: Anti-CSRF Synchronizer Token Defense',
+    detail:
+      'Defense-in-depth: Even if cookies were attached, the bank requires a unique per-session secret token. The attacker cannot read this token under SOP.',
+    source: 'Bank Origin (Tab 1 Form)',
+    target: 'Bank Server',
+    payload: 'request.csrf_token === session.csrf_token (Validated)',
+    badge: 'CSRF Token Validated',
+  },
+] as const;
+
 export const CsrfVisualizer: React.FC<Props> = ({ currentStep: externalStep, onSelectStep }) => {
   const [internalStep, setInternalStep] = useState<number>(0);
   const currentStep = externalStep !== undefined ? externalStep : internalStep;
@@ -37,7 +77,6 @@ export const CsrfVisualizer: React.FC<Props> = ({ currentStep: externalStep, onS
   const [csrfTokenEnabled, setCsrfTokenEnabled] = useState<boolean>(false);
   const [autoPlay, setAutoPlay] = useState<boolean>(false);
   const [attackTriggered, setAttackTriggered] = useState<boolean>(false);
-  const [transferExecuted, setTransferExecuted] = useState<boolean>(false);
 
   // In modern browsers:
   // SameSite=None sends cookies cross-site (if Secure is set).
@@ -51,53 +90,7 @@ export const CsrfVisualizer: React.FC<Props> = ({ currentStep: externalStep, onS
   const isBlockedByToken =
     (currentStep === 4 || attackTriggered) && sameSiteMode === 'None' && csrfTokenEnabled;
 
-  const stepsData = [
-    {
-      title: 'Step 1: The Victim Logs into Bank.com',
-      detail:
-        'The user logs into their online bank, receiving an authenticated session cookie (session_id=bank_99812). The browser stores it in the cookie jar.',
-      source: 'User Browser (Tab 1)',
-      target: 'Bank Server',
-      payload: 'Set-Cookie: session_id=bank_99812; Secure; HttpOnly',
-      badge: 'Legitimate Session Set',
-    },
-    {
-      title: 'Step 2: The Victim Visits Evil-Attacker.com',
-      detail:
-        'In a separate tab, the victim visits an untrusted site containing a hidden form with script: <form action="https://mybank.com/transfer" method="POST">.',
-      source: 'Evil Malicious Origin',
-      target: 'User Browser (Tab 2)',
-      payload: 'Hidden POST Form -> Auto-submit script triggered',
-      badge: 'Hidden Form Injected',
-    },
-    {
-      title: 'Step 3: Ambient Cookie Attachment (Vulnerability)',
-      detail:
-        'With SameSite=None, legacy browsers automatically attached the stored banking cookie to the cross-site POST. The bank executes the transfer!',
-      source: 'User Browser (Tab 2)',
-      target: 'Bank Server',
-      payload: 'POST /transfer { amount: 5000, to: attacker } + Cookie: session_id',
-      badge: 'Cross-Site POST Forged',
-    },
-    {
-      title: 'Step 4: SameSite Cookie Defense (Lax/Strict)',
-      detail:
-        'With SameSite=Lax or Strict, the browser inspects the cross-site origin and completely strips the session cookie from the cross-origin POST!',
-      source: 'Browser Engine Sandbox',
-      target: 'Target Bank Server',
-      payload: 'POST /transfer (Cookie stripped by Browser!) -> 401 Unauthorized',
-      badge: 'SameSite Cookie Stripped',
-    },
-    {
-      title: 'Step 5: Anti-CSRF Synchronizer Token Defense',
-      detail:
-        'Defense-in-depth: Even if cookies were attached, the bank requires a unique per-session secret token. The attacker cannot read this token under SOP.',
-      source: 'Bank Origin (Tab 1 Form)',
-      target: 'Bank Server',
-      payload: 'request.csrf_token === session.csrf_token (Validated)',
-      badge: 'CSRF Token Validated',
-    },
-  ];
+  const stepsData = CSRF_STEPS;
 
   const activeStep = stepsData[currentStep] || stepsData[0];
 
@@ -138,11 +131,9 @@ export const CsrfVisualizer: React.FC<Props> = ({ currentStep: externalStep, onS
   const handleRunAttack = () => {
     playTick();
     setAttackTriggered(true);
-    setTransferExecuted(false);
     handleStepSelect(2);
 
     setTimeout(() => {
-      setTransferExecuted(true);
       if (sameSiteMode === 'None' && !csrfTokenEnabled) {
         playAlert();
       } else {
@@ -154,7 +145,6 @@ export const CsrfVisualizer: React.FC<Props> = ({ currentStep: externalStep, onS
   const handleReset = () => {
     playTick();
     setAttackTriggered(false);
-    setTransferExecuted(false);
     handleStepSelect(0);
   };
 
@@ -191,7 +181,6 @@ export const CsrfVisualizer: React.FC<Props> = ({ currentStep: externalStep, onS
                 onClick={() => {
                   playTick();
                   setSameSiteMode(mode);
-                  setTransferExecuted(false);
                 }}
                 className={clsx(
                   'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
@@ -212,7 +201,6 @@ export const CsrfVisualizer: React.FC<Props> = ({ currentStep: externalStep, onS
             onClick={() => {
               playTick();
               setCsrfTokenEnabled(!csrfTokenEnabled);
-              setTransferExecuted(false);
             }}
             className={clsx(
               'btn-pop px-3.5 py-1.5 text-xs font-mono font-bold rounded-xl border transition-all flex items-center gap-1.5 cursor-pointer shadow-xs',

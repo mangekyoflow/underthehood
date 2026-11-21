@@ -1,23 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import {
-  ShieldCheck,
-  ShieldAlert,
-  Key,
-  Check,
-  Copy,
-  AlertOctagon,
-  RefreshCw,
-  Send,
-  ArrowRight,
-  Database,
-  Server,
-  Globe,
-  Sparkles,
-  CheckCircle2,
-  AlertTriangle,
-  Lock,
-  Unlock,
-} from 'lucide-react';
+import { ShieldCheck, Key, Check, Copy, Send, Database, Globe, AlertTriangle } from 'lucide-react';
 import { MetricCard } from '../common/MetricCard';
 import { playTick, playSuccess, playAlert } from '../../lib/sound';
 import clsx from 'clsx';
@@ -27,25 +9,28 @@ interface Props {
   onSelectStep?: (step: number) => void;
 }
 
-export const JwtVisualizer: React.FC<Props> = ({ currentStep: externalStep, onSelectStep }) => {
-  const [internalStep, setInternalStep] = useState<number>(0);
-  const currentStep = externalStep !== undefined ? externalStep : internalStep;
+// Deterministic base64 encoder for illustration
+function toBase64Url(str: string): string {
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
 
+const DEFAULT_USER_NAME = 'Alice Walker';
+const DEFAULT_ROLE = 'user';
+
+export const JwtVisualizer: React.FC<Props> = ({
+  currentStep: _currentStep,
+  onSelectStep: _onSelectStep,
+}) => {
   // Interactive Security Knobs
   const [alg, setAlg] = useState<'HS256' | 'none'>('HS256');
-  const [role, setRole] = useState<'user' | 'admin'>('user');
-  const [userName, setUserName] = useState('Alice Walker');
+  const role = DEFAULT_ROLE;
+  const userName = DEFAULT_USER_NAME;
   const [serverSecret, setServerSecret] = useState('super-secret-key-32-chars-long!');
   const [tamperedPayload, setTamperedPayload] = useState<boolean>(false);
   const [enforceAlgWhitelist, setEnforceAlgWhitelist] = useState<boolean>(true);
   const [isSendingRequest, setIsSendingRequest] = useState<boolean>(false);
   const [authVerdict, setAuthVerdict] = useState<'IDLE' | 'ALLOWED' | 'REJECTED'>('IDLE');
   const [copied, setCopied] = useState<boolean>(false);
-
-  // Deterministic base64 encoder for illustration
-  const toBase64Url = (str: string) => {
-    return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  };
 
   const headerObj = useMemo(
     () => ({

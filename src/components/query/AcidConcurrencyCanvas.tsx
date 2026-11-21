@@ -1,21 +1,6 @@
 import React from 'react';
-import {
-  Database,
-  Lock,
-  Unlock,
-  Play,
-  Pause,
-  RotateCcw,
-  ArrowRight,
-  ShieldCheck,
-  ShieldAlert,
-  AlertTriangle,
-  CheckCircle2,
-  User,
-  RefreshCw,
-  Radio,
-} from 'lucide-react';
-import { IsolationLevel, AnomalyScenarioId, DatabaseRow, TransactionStep } from '../../types/query';
+import { Database, Play, Pause, RotateCcw, User, Radio } from 'lucide-react';
+import { IsolationLevel, AnomalyScenarioId, DatabaseRow } from '../../types/query';
 import { ScenarioDefinition } from './AcidEngine';
 import clsx from 'clsx';
 
@@ -49,8 +34,8 @@ export const AcidConcurrencyCanvas: React.FC<AcidConcurrencyCanvasProps> = ({
   onNextStep,
   onPrevStep,
   onReset,
-  onSelectIsolation,
-  onSelectScenario,
+  onSelectIsolation: _onSelectIsolation,
+  onSelectScenario: _onSelectScenario,
 }) => {
   const currentStep = scenario.steps[currentStepIdx] || scenario.steps[0];
   const isSafe = scenario.preventedBy.includes(isolationLevel);

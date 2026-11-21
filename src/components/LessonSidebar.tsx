@@ -12,6 +12,18 @@ interface Props {
   lang: Language;
 }
 
+interface SidebarTrackConfig {
+  id: TrackId;
+  labelKey: 'trackAuth' | 'trackExploits' | 'trackArch' | 'trackCrypto';
+}
+
+const SIDEBAR_TRACK_CONFIG: readonly SidebarTrackConfig[] = [
+  { id: 'auth', labelKey: 'trackAuth' },
+  { id: 'exploits', labelKey: 'trackExploits' },
+  { id: 'architecture', labelKey: 'trackArch' },
+  { id: 'crypto', labelKey: 'trackCrypto' },
+] as const;
+
 export const LessonSidebar: React.FC<Props> = ({
   lessons,
   activeLessonId,
@@ -23,12 +35,10 @@ export const LessonSidebar: React.FC<Props> = ({
   const [filterText, setFilterText] = useState('');
   const t = TRANSLATIONS[lang];
 
-  const tracks: { id: TrackId; title: string }[] = [
-    { id: 'auth', title: t.trackAuth },
-    { id: 'exploits', title: t.trackExploits },
-    { id: 'architecture', title: t.trackArch },
-    { id: 'crypto', title: t.trackCrypto },
-  ];
+  const tracks = useMemo(
+    () => SIDEBAR_TRACK_CONFIG.map((tDef) => ({ id: tDef.id, title: t[tDef.labelKey] })),
+    [t]
+  );
 
   const filteredLessons = useMemo(() => {
     if (!filterText.trim()) return lessons;

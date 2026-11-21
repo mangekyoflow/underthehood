@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Network, Laptop, Server } from 'lucide-react';
 import { MODULES } from '../../data/modulesData';
 import {
@@ -51,7 +51,7 @@ export const TcpCongestionModule: React.FC<TcpCongestionModuleProps> = ({
   const bdpPackets = Math.max(4, Math.round(bdpBytes / 1500));
 
   // Step simulation function
-  const handleStep = () => {
+  const handleStep = useCallback(() => {
     setSimState((prev) => {
       const next = stepTcpSimulation(prev, config);
       const latest = next.history[next.history.length - 1];
@@ -81,7 +81,7 @@ export const TcpCongestionModule: React.FC<TcpCongestionModuleProps> = ({
 
       return next;
     });
-  };
+  }, [config, onChallengeComplete]);
 
   // Stop playback when moving out of the browser tab
   useEffect(() => {
@@ -106,7 +106,7 @@ export const TcpCongestionModule: React.FC<TcpCongestionModuleProps> = ({
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [isPlaying, speed, config]);
+  }, [isPlaying, speed, handleStep]);
 
   const handleReset = () => {
     setIsPlaying(false);

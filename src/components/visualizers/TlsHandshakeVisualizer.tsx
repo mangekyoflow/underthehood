@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
   Lock,
-  Unlock,
   Eye,
-  ArrowRight,
   ShieldCheck,
-  CheckCircle2,
   Play,
   Pause,
   RotateCcw,
-  Sparkles,
-  Key,
   Radio,
   Server,
   Laptop,
@@ -25,43 +20,25 @@ interface Props {
   onSelectStep?: (step: number) => void;
 }
 
-export const TlsHandshakeVisualizer: React.FC<Props> = ({
-  currentStep: externalStep,
-  onSelectStep,
-}) => {
-  const [internalStep, setInternalStep] = useState<number>(0);
-  const currentStep = externalStep !== undefined ? externalStep : internalStep;
+// Pure DH modular exponentiation
+function modPow(base: number, exp: number, mod: number): number {
+  let res = 1;
+  base = base % mod;
+  while (exp > 0) {
+    if (exp % 2 === 1) res = (res * base) % mod;
+    base = (base * base) % mod;
+    exp = Math.floor(exp / 2);
+  }
+  return res;
+}
 
-  // Interactive Security Knobs
-  const [eavesdropperActive, setEavesdropperActive] = useState<boolean>(true);
-  const [autoPlay, setAutoPlay] = useState<boolean>(false);
-  const [prime] = useState(23); // illustrative DH prime
-  const [gen] = useState(5); // generator
-  const [clientPrivate, setClientPrivate] = useState<number>(6);
-  const [serverPrivate, setServerPrivate] = useState<number>(15);
-
-  // DH math for educational clarity
-  const modPow = (base: number, exp: number, mod: number) => {
-    let res = 1;
-    base = base % mod;
-    while (exp > 0) {
-      if (exp % 2 === 1) res = (res * base) % mod;
-      base = (base * base) % mod;
-      exp = Math.floor(exp / 2);
-    }
-    return res;
-  };
-
-  const clientPublic = modPow(gen, clientPrivate, prime); // g^a mod p
-  const serverPublic = modPow(gen, serverPrivate, prime); // g^b mod p
-
-  // Derived Shared Secret
-  const clientDerivedSecret = modPow(serverPublic, clientPrivate, prime); // B^a mod p
-  const serverDerivedSecret = modPow(clientPublic, serverPrivate, prime); // A^b mod p
-
-  const isEncrypted = currentStep >= 3;
-
-  const stepsData = [
+function getTlsStepsData(
+  clientPublic: number,
+  serverPublic: number,
+  clientDerivedSecret: number,
+  serverDerivedSecret: number
+) {
+  return [
     {
       title: 'Step 1: ClientHello & Ephemeral Key Share',
       detail:
@@ -99,6 +76,38 @@ export const TlsHandshakeVisualizer: React.FC<Props> = ({
       badge: '1-RTT Encrypted Channel',
     },
   ];
+}
+
+export const TlsHandshakeVisualizer: React.FC<Props> = ({
+  currentStep: externalStep,
+  onSelectStep,
+}) => {
+  const [internalStep, setInternalStep] = useState<number>(0);
+  const currentStep = externalStep !== undefined ? externalStep : internalStep;
+
+  // Interactive Security Knobs
+  const [eavesdropperActive, setEavesdropperActive] = useState<boolean>(true);
+  const [autoPlay, setAutoPlay] = useState<boolean>(false);
+  const [prime] = useState(23); // illustrative DH prime
+  const [gen] = useState(5); // generator
+  const [clientPrivate, setClientPrivate] = useState<number>(6);
+  const [serverPrivate, setServerPrivate] = useState<number>(15);
+
+  const clientPublic = modPow(gen, clientPrivate, prime); // g^a mod p
+  const serverPublic = modPow(gen, serverPrivate, prime); // g^b mod p
+
+  // Derived Shared Secret
+  const clientDerivedSecret = modPow(serverPublic, clientPrivate, prime); // B^a mod p
+  const serverDerivedSecret = modPow(clientPublic, serverPrivate, prime); // A^b mod p
+
+  const isEncrypted = currentStep >= 3;
+
+  const stepsData = getTlsStepsData(
+    clientPublic,
+    serverPublic,
+    clientDerivedSecret,
+    serverDerivedSecret
+  );
 
   const activeStep = stepsData[currentStep] || stepsData[0];
 

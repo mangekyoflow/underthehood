@@ -15,6 +15,14 @@ interface ChallengeCardProps {
   lang?: Language;
 }
 
+const CONFETTI_COLORS: Record<string, string[]> = {
+  security: ['#10b981', '#3b82f6', '#ffffff'],
+  network: ['#06b6d4', '#38bdf8', '#ffffff'],
+  robotics: ['#f59e0b', '#fb923c', '#ffffff'],
+  silicon: ['#10b981', '#14b8a6', '#ffffff'],
+  database: ['#8b5cf6', '#c084fc', '#ffffff'],
+};
+
 export const ChallengeCard: React.FC<ChallengeCardProps> = ({
   challenge,
   isCompleted,
@@ -34,18 +42,9 @@ export const ChallengeCard: React.FC<ChallengeCardProps> = ({
           particleCount: 50,
           spread: 60,
           origin: { y: 0.8 },
-          colors:
-            accentColor === 'security'
-              ? ['#10b981', '#3b82f6', '#ffffff']
-              : accentColor === 'network'
-                ? ['#06b6d4', '#38bdf8', '#ffffff']
-                : accentColor === 'robotics'
-                  ? ['#f59e0b', '#fb923c', '#ffffff']
-                  : accentColor === 'silicon'
-                    ? ['#10b981', '#14b8a6', '#ffffff']
-                    : ['#8b5cf6', '#c084fc', '#ffffff'],
+          colors: CONFETTI_COLORS[accentColor] || CONFETTI_COLORS.security,
         });
-      } catch (e) {
+      } catch {
         // Confetti fallback
       }
       onComplete(challenge.id);

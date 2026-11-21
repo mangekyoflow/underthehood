@@ -1,20 +1,8 @@
 import React, { useState } from 'react';
-import {
-  KeyRound,
-  ShieldCheck,
-  ShieldAlert,
-  Cpu,
-  Zap,
-  RotateCcw,
-  Sparkles,
-  Check,
-  Lock,
-  AlertTriangle,
-} from 'lucide-react';
+import { KeyRound, Cpu } from 'lucide-react';
 import { MetricCard } from '../common/MetricCard';
 import { Badge } from '../common/Badge';
 import { playTick } from '../../lib/sound';
-import clsx from 'clsx';
 
 const PRESETS = [
   { name: 'Common Weak', value: 'password123', desc: 'Top 10 most common wordlist entry' },
@@ -98,19 +86,14 @@ export const PasswordEntropyBenchmark: React.FC = () => {
   const argonCrackSeconds = combinations / 15;
 
   let strengthLabel = 'Very Weak';
-  let strengthColor = 'text-red-500 bg-red-500/10 border-red-500/30';
   if (entropy >= 80) {
     strengthLabel = 'Cryptographically Unbreakable';
-    strengthColor = 'text-emerald-500 bg-emerald-500/10 border-emerald-500/30';
   } else if (entropy >= 60) {
     strengthLabel = 'Very Strong';
-    strengthColor = 'text-emerald-600 bg-emerald-600/10 border-emerald-600/30';
   } else if (entropy >= 45) {
     strengthLabel = 'Moderate';
-    strengthColor = 'text-cyan-600 bg-cyan-600/10 border-cyan-600/30';
   } else if (entropy >= 30) {
     strengthLabel = 'Weak';
-    strengthColor = 'text-amber-600 bg-amber-600/10 border-amber-600/30';
   }
 
   return (

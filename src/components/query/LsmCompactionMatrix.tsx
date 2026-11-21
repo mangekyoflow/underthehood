@@ -3,48 +3,48 @@ import { Database, Info } from 'lucide-react';
 import { playTick } from '../../lib/sound';
 import clsx from 'clsx';
 
+// Multipliers based on production RocksDB / Cassandra benchmarks
+const LSM_COMPACTION_CONFIGS = {
+  leveled: {
+    name: 'Leveled Compaction Strategy (LCS)',
+    engine: 'RocksDB / LevelDB Default',
+    writeAmp: 15,
+    readAmp: 3,
+    spaceAmp: 1.15,
+    bestFor: 'Read-heavy or balanced read/write workloads with tight disk budgets.',
+    pros: 'Predictable point read performance and minimal disk space overhead.',
+    cons: 'High write amplification causes accelerated NVMe SSD flash wear.',
+    badgeVariant: 'cyan' as const,
+  },
+  'size-tiered': {
+    name: 'Size-Tiered Compaction Strategy (STCS)',
+    engine: 'Apache Cassandra / ScyllaDB Default',
+    writeAmp: 4,
+    readAmp: 12,
+    spaceAmp: 1.8,
+    bestFor: 'Write-heavy workloads, append-only logs, and message queues.',
+    pros: 'Low write amplification and high sustained ingestion throughput.',
+    cons: 'High space amplification; requires keeping 50% free disk space to avoid out-of-disk crashes.',
+    badgeVariant: 'amber' as const,
+  },
+  'time-window': {
+    name: 'Time-Window Compaction Strategy (TWCS)',
+    engine: 'Cassandra / RocksDB Universal for Time-Series',
+    writeAmp: 2,
+    readAmp: 4,
+    spaceAmp: 1.2,
+    bestFor: 'Time-series metrics, telemetry logs with TTL expiration.',
+    pros: 'Entire old SSTables are dropped cleanly when TTL expires with 0 write amplification.',
+    cons: 'Out-of-order writes severely degrade read performance.',
+    badgeVariant: 'purple' as const,
+  },
+} as const;
+
 export const LsmCompactionMatrix: React.FC = () => {
   const [dailyWriteGb, setDailyWriteGb] = useState<number>(200);
   const [strategy, setStrategy] = useState<'leveled' | 'size-tiered' | 'time-window'>('leveled');
 
-  // Multipliers based on production RocksDB / Cassandra benchmarks
-  const configs = {
-    leveled: {
-      name: 'Leveled Compaction Strategy (LCS)',
-      engine: 'RocksDB / LevelDB Default',
-      writeAmp: 15,
-      readAmp: 3,
-      spaceAmp: 1.15,
-      bestFor: 'Read-heavy or balanced read/write workloads with tight disk budgets.',
-      pros: 'Predictable point read performance and minimal disk space overhead.',
-      cons: 'High write amplification causes accelerated NVMe SSD flash wear.',
-      badgeVariant: 'cyan',
-    },
-    'size-tiered': {
-      name: 'Size-Tiered Compaction Strategy (STCS)',
-      engine: 'Apache Cassandra / ScyllaDB Default',
-      writeAmp: 4,
-      readAmp: 12,
-      spaceAmp: 1.8,
-      bestFor: 'Write-heavy workloads, append-only logs, and message queues.',
-      pros: 'Low write amplification and high sustained ingestion throughput.',
-      cons: 'High space amplification; requires keeping 50% free disk space to avoid out-of-disk crashes.',
-      badgeVariant: 'amber',
-    },
-    'time-window': {
-      name: 'Time-Window Compaction Strategy (TWCS)',
-      engine: 'Cassandra / RocksDB Universal for Time-Series',
-      writeAmp: 2,
-      readAmp: 4,
-      spaceAmp: 1.2,
-      bestFor: 'Time-series metrics, telemetry logs with TTL expiration.',
-      pros: 'Entire old SSTables are dropped cleanly when TTL expires with 0 write amplification.',
-      cons: 'Out-of-order writes severely degrade read performance.',
-      badgeVariant: 'purple',
-    },
-  };
-
-  const current = configs[strategy];
+  const current = LSM_COMPACTION_CONFIGS[strategy];
 
   // Daily and yearly SSD flash wear calculations
   const dailyDiskWritesGb = dailyWriteGb * current.writeAmp;
@@ -72,7 +72,7 @@ export const LsmCompactionMatrix: React.FC = () => {
       {/* Strategy Switcher */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         {(['leveled', 'size-tiered', 'time-window'] as const).map((key) => {
-          const item = configs[key];
+          const item = LSM_COMPACTION_CONFIGS[key];
           const isSelected = strategy === key;
           return (
             <button
