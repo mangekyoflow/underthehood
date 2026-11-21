@@ -127,14 +127,9 @@ export const Header: React.FC<Props> = ({
             <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-emerald-600 via-blue-600 to-purple-600 flex items-center justify-center text-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
               <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <span className="font-serif font-bold text-sm sm:text-base lg:text-lg tracking-tight text-ink-light dark:text-ink-dark group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors whitespace-nowrap">
-                <span className="hidden sm:inline">Designed to </span>Secure
-              </span>
-              <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 hidden xl:inline">
-                {t.badgeInteractive}
-              </span>
-            </div>
+            <span className="font-serif font-bold text-sm sm:text-base lg:text-lg tracking-tight text-ink-light dark:text-ink-dark group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors whitespace-nowrap">
+              <span className="hidden sm:inline">Designed to </span>Secure
+            </span>
           </button>
 
           {/* Curriculum Drawer Toggle Button (When on Security suite) */}
@@ -238,12 +233,11 @@ export const Header: React.FC<Props> = ({
               onClick={handleInstallClick}
               disabled={isInstalling}
               aria-disabled={isInstalling}
-              className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs font-mono font-medium transition-all shadow-xs cursor-pointer min-h-[36px]"
-              title="Install Under The Hood as a standalone app"
+              className="p-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 transition-colors cursor-pointer shadow-xs min-h-[36px] min-w-[36px] flex items-center justify-center"
+              title={t.installApp}
               aria-label={t.installApp}
             >
               <Download className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-              <span className="hidden md:inline">{t.installApp}</span>
             </button>
           )}
 

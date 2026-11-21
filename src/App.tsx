@@ -59,7 +59,7 @@ import { ChallengeCard } from './components/common/ChallengeCard';
 import { getSecurityMeta } from './data/securityChallenges';
 import { SecurityWorkbench } from './components/security/SecurityWorkbench';
 
-import { Sparkles, Key, ShieldAlert, Server, Lock } from 'lucide-react';
+import { Sparkles, Key, ShieldAlert, Server, Lock, Github } from 'lucide-react';
 
 interface SecurityTrackDef {
   id: SecurityTrackId;
@@ -856,57 +856,21 @@ export function App() {
         </main>
       )}
 
-      {/* Unified Platform Footer */}
-      <footer className="w-full border-t border-parchment-200 dark:border-parchment-800 bg-parchment-100/80 dark:bg-parchment-950/80 py-6 sm:py-8 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] text-center text-xs font-mono text-ink-muted dark:text-ink-darkMuted transition-colors">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Key className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span className="font-serif font-bold text-sm text-ink-light dark:text-ink-dark">
-              {t.footerTitle}
-            </span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-300 font-bold">
-              {t.allModulesCount}
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-[11px]">
-            <button
-              onClick={() => setCurrentSuiteTab('security')}
-              className={`hover:underline cursor-pointer ${currentSuiteTab === 'security' ? 'font-bold text-emerald-600 dark:text-emerald-400' : ''}`}
-            >
-              {t.tabSecurity} (23)
-            </button>
-            <span>•</span>
-            <button
-              onClick={() => setCurrentSuiteTab('route')}
-              className={`hover:underline cursor-pointer ${currentSuiteTab === 'route' ? 'font-bold text-cyan-600 dark:text-cyan-400' : ''}`}
-            >
-              {t.tabRoute} (4)
-            </button>
-            <span>•</span>
-            <button
-              onClick={() => setCurrentSuiteTab('query')}
-              className={`hover:underline cursor-pointer ${currentSuiteTab === 'query' ? 'font-bold text-purple-600 dark:text-purple-400' : ''}`}
-            >
-              {t.tabQuery} (3)
-            </button>
-            <span>•</span>
-            <button
-              onClick={() => setCurrentSuiteTab('actuate')}
-              className={`hover:underline cursor-pointer ${currentSuiteTab === 'actuate' ? 'font-bold text-amber-600 dark:text-amber-400' : ''}`}
-            >
-              {t.tabActuate} (3)
-            </button>
-            <span>•</span>
-            <button
-              onClick={() => setCurrentSuiteTab('silicon')}
-              className={`hover:underline cursor-pointer ${currentSuiteTab === 'silicon' ? 'font-bold text-emerald-600 dark:text-emerald-400' : ''}`}
-            >
-              {t.tabSilicon} (2)
-            </button>
-          </div>
-
-          <p className="text-[10px] text-ink-muted dark:text-ink-darkMuted">{t.builtForSystems}</p>
+      {/* Platform Footer */}
+      <footer className="w-full border-t border-parchment-200 dark:border-parchment-800 bg-parchment-100/60 dark:bg-parchment-950/60 py-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between text-xs text-ink-muted dark:text-ink-darkMuted font-mono">
+          <span className="font-serif font-bold text-sm text-ink-light dark:text-ink-dark">
+            underthehood
+          </span>
+          <a
+            href="https://github.com/mangekyoflow/underthehood"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs text-ink-muted hover:text-ink-light dark:hover:text-ink-dark transition-colors"
+          >
+            <Github className="w-3.5 h-3.5" />
+            <span>GitHub</span>
+          </a>
         </div>
       </footer>
     </div>
