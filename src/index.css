@@ -30,6 +30,11 @@
   }
 }
 
+html {
+  scroll-padding-top: calc(4rem + env(safe-area-inset-top, 0px));
+  scroll-padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+}
+
 body {
   margin: 0;
   min-height: 100dvh;
@@ -73,12 +78,45 @@ svg {
 }
 
 /* Touch target sizing for touch devices (WCAG 2.5.5 / 2.5.8) */
+:root {
+  --target-size: 28px;
+}
 @media (pointer: coarse) {
+  :root {
+    --target-size: 44px;
+  }
   button,
   [role='button'],
   select,
   .btn-pop {
-    min-block-size: 38px;
+    min-block-size: var(--target-size);
+  }
+}
+
+/* Expanded touch target for small step indicator dots */
+.step-dot-touch {
+  position: relative;
+}
+.step-dot-touch::after {
+  content: '';
+  position: absolute;
+  inset: -10px -5px;
+}
+
+/* Adaptive diagram canvas container: horizontal touch-scroll on mobile prevents micro-text */
+.diagram-canvas-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+
+@media (max-width: 639px) {
+  .diagram-canvas-scroll > svg,
+  .diagram-canvas-scroll .diagram-svg {
+    min-inline-size: 580px;
+    max-inline-size: none;
   }
 }
 
@@ -86,6 +124,12 @@ svg {
 .touch-scroll {
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
+}
+
+/* Visual fade mask for overflowing horizontal pill strips */
+.scroll-fade-edge {
+  mask-image: linear-gradient(to right, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 90%, transparent 100%);
 }
 
 /* Pause all CSS keyframe animations immediately when moving out of the browser tab */

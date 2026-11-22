@@ -282,7 +282,7 @@ export const OAuthPkceVisualizer: React.FC<Props> = ({
         </div>
 
         {/* SVG Living Architecture Canvas with Continuous animateMotion */}
-        <div className="w-full relative flex items-center justify-center py-4">
+        <div className="w-full relative flex items-center justify-center py-4 diagram-canvas-scroll">
           <svg
             viewBox="0 0 760 330"
             className="w-full h-auto max-h-[380px] overflow-visible select-none"

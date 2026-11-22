@@ -14,7 +14,7 @@ import {
 } from '../../data/roboticsTutorialData';
 import { Badge } from '../common/Badge';
 import { playTick } from '../../lib/sound';
-import { Cog, GraduationCap, Wrench } from 'lucide-react';
+import { Cog, GraduationCap, Wrench, BookOpen } from 'lucide-react';
 import clsx from 'clsx';
 
 interface ActuateTrackViewProps {
@@ -24,6 +24,7 @@ interface ActuateTrackViewProps {
   progress: UserProgress;
   onChallengeComplete: (id: string) => void;
   onSelectModule?: (id: ActuateModuleId | 'actuator-structure') => void;
+  onToggleCurriculum?: () => void;
 }
 
 const ACTUATE_MODULES = [
@@ -31,24 +32,28 @@ const ACTUATE_MODULES = [
     id: 'pid-control-loop' as ActuateModuleId,
     num: '07',
     title: 'Closed-Loop PID Control',
+    shortTitle: 'PID Control',
     desc: 'Feedback gains, step response & disturbance rejection',
   },
   {
     id: 'ros2-teleoperation' as ActuateModuleId,
     num: '08',
     title: 'ROS 2 & Zenoh Teleoperation',
+    shortTitle: 'ROS 2 Teleop',
     desc: 'Pub/sub determinism, QoS profiles & bufferbloat',
   },
   {
     id: 'inverse-kinematics' as ActuateModuleId,
     num: '09',
     title: 'Inverse Kinematics & Jacobians',
+    shortTitle: 'Inverse Kinematics',
     desc: 'Manipulability ellipsoids, singularities & DLS',
   },
   {
     id: 'foc-motor-control' as ActuateModuleId,
     num: '10',
     title: 'Field-Oriented Control (FOC)',
+    shortTitle: 'FOC Motor Control',
     desc: 'Vector commutation, Clarke/Park transforms & SVPWM',
   },
 ] as const;
@@ -60,6 +65,7 @@ export const ActuateTrackView: React.FC<ActuateTrackViewProps> = ({
   progress,
   onChallengeComplete,
   onSelectModule,
+  onToggleCurriculum,
 }) => {
   const [activeView, setActiveView] = useState<ActuateModuleId | 'actuator-structure'>(
     initialModuleId
@@ -168,8 +174,27 @@ export const ActuateTrackView: React.FC<ActuateTrackViewProps> = ({
           </p>
         </div>
 
-        {/* View Mode Toggle (Tutorial vs Free Sandbox) */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        {/* Right side controls: Course Index + View Mode Toggle */}
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
+          {onToggleCurriculum && (
+            <button
+              onClick={() => {
+                playTick();
+                onToggleCurriculum();
+              }}
+              className="px-3 sm:px-3.5 py-1.5 min-h-[38px] rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 dark:text-amber-300 font-mono text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-xs shrink-0 whitespace-nowrap"
+              title="Open Course Index (All 39 Modules)"
+              aria-label="Open Course Index"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Course Index</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 text-[10px] font-mono">
+                39
+              </span>
+            </button>
+          )}
+
+          {/* View Mode Toggle (Tutorial vs Free Sandbox) */}
           <div className="flex items-center p-1 rounded-2xl bg-parchment-200/60 dark:bg-parchment-900/60 border border-parchment-300 dark:border-parchment-800 text-xs font-mono shrink-0">
             <button
               onClick={() => {
@@ -206,8 +231,8 @@ export const ActuateTrackView: React.FC<ActuateTrackViewProps> = ({
       </div>
 
       {/* Submodule Segmented Pills */}
-      <div className="flex items-center justify-between gap-3 overflow-x-auto touch-scroll no-scrollbar pb-1">
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto touch-scroll no-scrollbar max-w-full shrink-0">
+      <div className="flex items-center overflow-x-auto touch-scroll no-scrollbar pb-1">
+        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono min-w-max shrink-0">
           {ACTUATE_MODULES.map((m) => {
             const isActive = activeView === m.id;
             return (
@@ -215,7 +240,7 @@ export const ActuateTrackView: React.FC<ActuateTrackViewProps> = ({
                 key={m.id}
                 onClick={() => handleSelectModule(m.id)}
                 className={clsx(
-                  'px-3 sm:px-3.5 py-1.5 min-h-[36px] rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0',
+                  'px-3 sm:px-3.5 py-1.5 min-h-[38px] rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0',
                   isActive
                     ? 'bg-white dark:bg-parchment-800 text-ink-light dark:text-ink-dark font-bold shadow-sm border border-parchment-300 dark:border-parchment-700'
                     : 'text-ink-muted hover:text-ink-light dark:hover:text-ink-dark hover:bg-parchment-200/60 dark:hover:bg-parchment-800/60'
@@ -228,9 +253,8 @@ export const ActuateTrackView: React.FC<ActuateTrackViewProps> = ({
                 >
                   {m.num}
                 </span>
-                <span>
-                  {m.title.split(' ')[0]} {m.title.split(' ')[1]}
-                </span>
+                <span className="hidden md:inline">{m.title}</span>
+                <span className="md:hidden">{m.shortTitle}</span>
               </button>
             );
           })}
@@ -239,14 +263,24 @@ export const ActuateTrackView: React.FC<ActuateTrackViewProps> = ({
           <button
             onClick={handleSelectStructure}
             className={clsx(
-              'px-3 sm:px-3.5 py-1.5 min-h-[36px] rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0',
+              'px-3 sm:px-3.5 py-1.5 min-h-[38px] rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0',
               activeView === 'actuator-structure'
                 ? 'bg-amber-500/15 text-amber-800 dark:text-amber-300 font-bold shadow-sm border border-amber-500/40'
                 : 'text-ink-muted hover:text-ink-light dark:hover:text-ink-dark hover:bg-parchment-200/60 dark:hover:bg-parchment-800/60'
             )}
           >
+            <span
+              className={
+                activeView === 'actuator-structure'
+                  ? 'text-amber-700 dark:text-amber-400 font-bold'
+                  : 'text-ink-muted'
+              }
+            >
+              10b
+            </span>
             <Cog className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-            <span>Actuator Anatomy &amp; Gearing</span>
+            <span className="hidden sm:inline">Actuator Anatomy &amp; Gearing</span>
+            <span className="sm:hidden">Actuator Anatomy</span>
           </button>
         </div>
       </div>
@@ -261,7 +295,7 @@ export const ActuateTrackView: React.FC<ActuateTrackViewProps> = ({
       )}
 
       {/* Active Module Visualizer Canvas */}
-      <div className="rounded-2xl overflow-hidden border border-parchment-200 dark:border-parchment-800 shadow-sm bg-white dark:bg-parchment-900">
+      <div className="min-w-0">
         {activeView === 'pid-control-loop' && (
           <PidControlVisualizer
             onChallengeComplete={onChallengeComplete}

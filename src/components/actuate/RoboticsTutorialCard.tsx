@@ -172,7 +172,7 @@ export const RoboticsTutorialCard: React.FC<RoboticsTutorialCardProps> = ({
   return (
     <div className="rounded-2xl border border-parchment-200/80 dark:border-parchment-800/80 bg-white/95 dark:bg-parchment-900/95 shadow-sm overflow-hidden transition-all space-y-0">
       {/* 1. Step Scrubber Controls Bar (Designed to Scale style) */}
-      <div className="p-3 sm:p-4 bg-parchment-100/70 dark:bg-parchment-950/70 border-b border-parchment-200/80 dark:border-parchment-800/80 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      <div className="p-3 sm:p-4 bg-parchment-100/70 dark:bg-parchment-950/70 border-b border-parchment-200/80 dark:border-parchment-800/80 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 min-w-0">
         {/* Left: Player Controls (Prev, Play/Pause, Next, Speed) */}
         <div className="flex items-center justify-between sm:justify-start gap-1.5 shrink-0">
           <button
@@ -233,7 +233,7 @@ export const RoboticsTutorialCard: React.FC<RoboticsTutorialCardProps> = ({
         </div>
 
         {/* Right / Center: Segmented Step Buttons with Short Names */}
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 touch-scroll">
+        <div className="w-full lg:w-auto min-w-0 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 touch-scroll">
           {steps.map((s, idx) => {
             const isActive = idx === currentStepIndex;
             return (
@@ -267,12 +267,12 @@ export const RoboticsTutorialCard: React.FC<RoboticsTutorialCardProps> = ({
       </div>
 
       {/* 2. Top Header & Tab Controls */}
-      <div className="px-4 sm:px-6 py-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-b border-parchment-200/80 dark:border-parchment-800/80 flex flex-wrap items-center justify-between gap-3">
+      <div className="px-4 sm:px-6 py-3 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-b border-parchment-200/80 dark:border-parchment-800/80 flex flex-wrap items-center justify-between gap-3 min-w-0">
         {/* Step Badge & Chapter Pill */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span
             className={clsx(
-              'px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border',
+              'px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border shrink-0',
               chapterInfo.badgeClass
             )}
           >
@@ -284,14 +284,14 @@ export const RoboticsTutorialCard: React.FC<RoboticsTutorialCardProps> = ({
         </div>
 
         {/* Tab switchers: Narrative, Math, Driver Code */}
-        <div className="flex items-center gap-1.5 p-0.5 rounded-xl bg-parchment-200/60 dark:bg-parchment-800/60 text-xs font-mono">
+        <div className="flex items-center gap-1.5 p-0.5 rounded-xl bg-parchment-200/60 dark:bg-parchment-800/60 text-xs font-mono overflow-x-auto no-scrollbar shrink-0 max-w-full">
           <button
             onClick={() => {
               playTick();
               setActiveTab('narrative');
             }}
             className={clsx(
-              'px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5',
+              'px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0',
               activeTab === 'narrative'
                 ? 'bg-white dark:bg-parchment-700 text-ink-light dark:text-ink-dark font-bold shadow-2xs'
                 : 'text-ink-muted hover:text-ink-light dark:hover:text-ink-dark'
@@ -307,7 +307,7 @@ export const RoboticsTutorialCard: React.FC<RoboticsTutorialCardProps> = ({
               setActiveTab('math');
             }}
             className={clsx(
-              'px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5',
+              'px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0',
               activeTab === 'math'
                 ? 'bg-white dark:bg-parchment-700 text-ink-light dark:text-ink-dark font-bold shadow-2xs'
                 : 'text-ink-muted hover:text-ink-light dark:hover:text-ink-dark'
@@ -324,7 +324,7 @@ export const RoboticsTutorialCard: React.FC<RoboticsTutorialCardProps> = ({
                 setActiveTab('code');
               }}
               className={clsx(
-                'px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5',
+                'px-2.5 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0',
                 activeTab === 'code'
                   ? 'bg-white dark:bg-parchment-700 text-ink-light dark:text-ink-dark font-bold shadow-2xs'
                   : 'text-ink-muted hover:text-ink-light dark:hover:text-ink-dark'
@@ -471,7 +471,7 @@ export const RoboticsTutorialCard: React.FC<RoboticsTutorialCardProps> = ({
               <button
                 onClick={handleActionClick}
                 className={clsx(
-                  'px-4 py-2.5 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all cursor-pointer w-full sm:w-auto shrink-0 shadow-sm min-h-[42px]',
+                  'px-4 py-2.5 rounded-xl text-xs font-mono font-bold flex items-center justify-center gap-2 transition-all cursor-pointer w-full sm:w-auto shrink-0 shadow-sm min-h-[44px] touch-manipulation',
                   isCurrentStepApplied
                     ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
                     : 'bg-amber-600 hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-600 text-white'

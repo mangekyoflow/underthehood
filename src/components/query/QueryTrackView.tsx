@@ -5,6 +5,7 @@ import { BPlusTreeModule } from './BPlusTreeModule';
 import { AcidSimulatorModule } from './AcidSimulatorModule';
 import { Badge } from '../common/Badge';
 import { playTick } from '../../lib/sound';
+import { BookOpen } from 'lucide-react';
 import clsx from 'clsx';
 
 interface QueryTrackViewProps {
@@ -12,24 +13,25 @@ interface QueryTrackViewProps {
   progress: UserProgress;
   onChallengeComplete: (id: string) => void;
   onSelectModule?: (id: QueryModuleId) => void;
+  onToggleCurriculum?: () => void;
 }
 
 const QUERY_MODULES = [
   {
     id: 'lsm-tree' as QueryModuleId,
-    num: '04',
+    num: '05',
     title: 'LSM-Tree Simulator',
     desc: 'RocksDB & Cassandra storage engines',
   },
   {
     id: 'bplus-tree' as QueryModuleId,
-    num: '05',
+    num: '06',
     title: 'B+ Tree Node Splitter',
     desc: 'Relational indexing & page splits',
   },
   {
     id: 'acid-isolation' as QueryModuleId,
-    num: '06',
+    num: '06b',
     title: 'ACID & Isolation Levels',
     desc: 'Concurrency anomalies & MVCC',
   },
@@ -40,6 +42,7 @@ export const QueryTrackView: React.FC<QueryTrackViewProps> = ({
   progress,
   onChallengeComplete,
   onSelectModule,
+  onToggleCurriculum,
 }) => {
   const [activeModule, setActiveModule] = useState<QueryModuleId>(initialModuleId);
 
@@ -75,34 +78,54 @@ export const QueryTrackView: React.FC<QueryTrackViewProps> = ({
           </p>
         </div>
 
-        {/* Submodule Segmented Pills */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto touch-scroll no-scrollbar max-w-full shrink-0">
-          {QUERY_MODULES.map((m) => {
-            const isActive = activeModule === m.id;
-            return (
-              <button
-                key={m.id}
-                onClick={() => handleSelect(m.id)}
-                className={clsx(
-                  'px-3 sm:px-3.5 py-1.5 min-h-[36px] rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0',
-                  isActive
-                    ? 'bg-white dark:bg-parchment-800 text-ink-light dark:text-ink-dark font-bold shadow-sm border border-parchment-300 dark:border-parchment-700'
-                    : 'text-ink-muted hover:text-ink-light dark:hover:text-ink-dark hover:bg-parchment-200/60 dark:hover:bg-parchment-800/60'
-                )}
-              >
-                <span
-                  className={
-                    isActive ? 'text-purple-700 dark:text-purple-400 font-bold' : 'text-ink-muted'
-                  }
+        {/* Submodule Segmented Pills & Course Index Trigger */}
+        <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 max-w-full shrink-0">
+          {onToggleCurriculum && (
+            <button
+              onClick={() => {
+                playTick();
+                onToggleCurriculum();
+              }}
+              className="px-3 sm:px-3.5 py-1.5 min-h-[38px] rounded-xl border border-purple-500/40 bg-purple-500/10 hover:bg-purple-500/20 text-purple-800 dark:text-purple-300 font-mono text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-xs shrink-0 whitespace-nowrap"
+              title="Open Course Index (All 39 Modules)"
+              aria-label="Open Course Index"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Course Index</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-purple-500/20 text-[10px] font-mono">
+                39
+              </span>
+            </button>
+          )}
+
+          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto touch-scroll no-scrollbar max-w-full shrink-0">
+            {QUERY_MODULES.map((m) => {
+              const isActive = activeModule === m.id;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => handleSelect(m.id)}
+                  className={clsx(
+                    'px-3 sm:px-3.5 py-1.5 min-h-[36px] rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0',
+                    isActive
+                      ? 'bg-white dark:bg-parchment-800 text-ink-light dark:text-ink-dark font-bold shadow-sm border border-parchment-300 dark:border-parchment-700'
+                      : 'text-ink-muted hover:text-ink-light dark:hover:text-ink-dark hover:bg-parchment-200/60 dark:hover:bg-parchment-800/60'
+                  )}
                 >
-                  {m.num}
-                </span>
-                <span>
-                  {m.title.split(' ')[0]} {m.title.split(' ')[1]}
-                </span>
-              </button>
-            );
-          })}
+                  <span
+                    className={
+                      isActive ? 'text-purple-700 dark:text-purple-400 font-bold' : 'text-ink-muted'
+                    }
+                  >
+                    {m.num}
+                  </span>
+                  <span>
+                    {m.title.split(' ')[0]} {m.title.split(' ')[1]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

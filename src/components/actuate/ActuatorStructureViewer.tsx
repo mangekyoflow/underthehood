@@ -941,6 +941,561 @@ export const ActuatorStructureViewer: React.FC<ActuatorStructureViewerProps> = (
         </div>
       )}
 
+      {/* VIEW 4: Flux & Torque Flow (Electromechanical Energy Cascade) */}
+      {activeTab === 'energy' &&
+        (() => {
+          const motorRadPerSec = (motorRpm * 2 * Math.PI) / 60;
+          const mechPowerIn = motorTorqueNm * motorRadPerSec;
+          const inverterLossW = Math.max(4, 0.04 * mechPowerIn + 6);
+          const copperLossW = Math.max(6, 0.075 * mechPowerIn + 8);
+          const totalElecPowerIn = mechPowerIn + inverterLossW + copperLossW;
+          const gearboxLossW = mechPowerIn * (1 - efficiency);
+          const usefulOutputPowerW = outputTorqueNm * ((outputRpm * 2 * Math.PI) / 60);
+          const overallEfficiencyPct =
+            totalElecPowerIn > 0
+              ? Math.min(92, Math.max(10, (usefulOutputPowerW / totalElecPowerIn) * 100))
+              : 0;
+
+          const invPct = ((inverterLossW / totalElecPowerIn) * 100).toFixed(1);
+          const copperPct = ((copperLossW / totalElecPowerIn) * 100).toFixed(1);
+          const gearPct = ((gearboxLossW / totalElecPowerIn) * 100).toFixed(1);
+          const usefulPct = ((usefulOutputPowerW / totalElecPowerIn) * 100).toFixed(1);
+
+          return (
+            <div className="space-y-6">
+              {/* Header Badge */}
+              <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono text-xs">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span className="font-bold text-ink-light dark:text-ink-dark">
+                    ELECTROMECHANICAL FLUX &amp; TORQUE POWER CASCADE
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-ink-muted">Net System Efficiency:</span>
+                  <span className="px-2.5 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 font-bold border border-emerald-500/30">
+                    {overallEfficiencyPct.toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Energy KPI Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5 font-mono text-xs">
+                <div className="p-3.5 rounded-xl border border-parchment-200 dark:border-parchment-800 bg-parchment-50 dark:bg-parchment-950">
+                  <div className="text-[10px] text-ink-muted uppercase">DC Bus Input Power</div>
+                  <div className="text-lg font-bold text-sky-600 dark:text-sky-400 mt-0.5">
+                    {totalElecPowerIn.toFixed(0)} W
+                  </div>
+                  <div className="text-[10px] text-ink-muted mt-0.5">
+                    V_bus = 48V DC • I_bus = {(totalElecPowerIn / 48).toFixed(1)}A
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-parchment-200 dark:border-parchment-800 bg-parchment-50 dark:bg-parchment-950">
+                  <div className="text-[10px] text-ink-muted uppercase">Electromagnetic Airgap</div>
+                  <div className="text-lg font-bold text-amber-600 dark:text-amber-400 mt-0.5">
+                    {mechPowerIn.toFixed(0)} W
+                  </div>
+                  <div className="text-[10px] text-ink-muted mt-0.5">
+                    τ_motor = {motorTorqueNm.toFixed(2)} Nm @ {motorRpm} RPM
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-parchment-200 dark:border-parchment-800 bg-parchment-50 dark:bg-parchment-950">
+                  <div className="text-[10px] text-ink-muted uppercase">Output Useful Work</div>
+                  <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                    {usefulOutputPowerW.toFixed(0)} W
+                  </div>
+                  <div className="text-[10px] text-ink-muted mt-0.5">
+                    τ_joint = {outputTorqueNm.toFixed(1)} Nm @ {outputRpm.toFixed(1)} RPM
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl border border-parchment-200 dark:border-parchment-800 bg-parchment-50 dark:bg-parchment-950">
+                  <div className="text-[10px] text-ink-muted uppercase">
+                    Total Thermal Dissipation
+                  </div>
+                  <div className="text-lg font-bold text-rose-600 dark:text-rose-400 mt-0.5">
+                    {(inverterLossW + copperLossW + gearboxLossW).toFixed(0)} W
+                  </div>
+                  <div className="text-[10px] text-ink-muted mt-0.5">
+                    Joule + Inverter + Gear friction
+                  </div>
+                </div>
+              </div>
+
+              {/* Interactive Sankey / Cascade Diagram Canvas */}
+              <div className="p-4 sm:p-5 rounded-2xl border border-parchment-200 dark:border-parchment-800 bg-slate-950 text-white font-mono space-y-4 shadow-inner">
+                <div className="flex items-center justify-between text-xs text-slate-400 pb-2 border-b border-slate-800">
+                  <span>
+                    ENERGY CONVERSION CASCADE (DC BUS → GAIN INVERTER → BLDC → HARMONIC DRIVE)
+                  </span>
+                  <span className="text-emerald-400 font-bold">100% In → {usefulPct}% Out</span>
+                </div>
+
+                {/* SVG Sankey Diagram */}
+                <div className="w-full bg-slate-900 rounded-xl p-3 border border-slate-800 overflow-x-auto">
+                  <svg viewBox="0 0 760 210" className="w-full h-auto select-none min-w-[640px]">
+                    <defs>
+                      <linearGradient id="elec-flow" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#38bdf8" />
+                        <stop offset="100%" stopColor="#6366f1" />
+                      </linearGradient>
+                      <linearGradient id="magnetic-flow" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#6366f1" />
+                        <stop offset="100%" stopColor="#f59e0b" />
+                      </linearGradient>
+                      <linearGradient id="mech-flow" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#f59e0b" />
+                        <stop offset="100%" stopColor="#10b981" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Stage 1: DC Bus Box */}
+                    <g transform="translate(15, 30)">
+                      <rect
+                        width="110"
+                        height="90"
+                        rx="8"
+                        fill="#1e293b"
+                        stroke="#38bdf8"
+                        strokeWidth="1.5"
+                      />
+                      <text
+                        x="55"
+                        y="24"
+                        textAnchor="middle"
+                        fontSize="10"
+                        fontWeight="bold"
+                        fill="#38bdf8"
+                      >
+                        1. DC BATTERY
+                      </text>
+                      <text
+                        x="55"
+                        y="44"
+                        textAnchor="middle"
+                        fontSize="11"
+                        fontWeight="bold"
+                        fill="#ffffff"
+                      >
+                        {totalElecPowerIn.toFixed(0)} W
+                      </text>
+                      <text x="55" y="60" textAnchor="middle" fontSize="8" fill="#94a3b8">
+                        48V Li-Ion Pack
+                      </text>
+                      <text x="55" y="76" textAnchor="middle" fontSize="8" fill="#64748b">
+                        100% Input
+                      </text>
+                    </g>
+
+                    {/* Connector 1 */}
+                    <path
+                      d="M 125 75 L 180 75"
+                      fill="none"
+                      stroke="url(#elec-flow)"
+                      strokeWidth="14"
+                      opacity="0.8"
+                    />
+
+                    {/* Stage 2: GaN Inverter Box */}
+                    <g transform="translate(180, 30)">
+                      <rect
+                        width="115"
+                        height="90"
+                        rx="8"
+                        fill="#1e293b"
+                        stroke="#818cf8"
+                        strokeWidth="1.5"
+                      />
+                      <text
+                        x="57"
+                        y="24"
+                        textAnchor="middle"
+                        fontSize="10"
+                        fontWeight="bold"
+                        fill="#818cf8"
+                      >
+                        2. GaN INVERTER
+                      </text>
+                      <text
+                        x="57"
+                        y="44"
+                        textAnchor="middle"
+                        fontSize="11"
+                        fontWeight="bold"
+                        fill="#ffffff"
+                      >
+                        {(totalElecPowerIn - inverterLossW).toFixed(0)} W
+                      </text>
+                      <text x="57" y="60" textAnchor="middle" fontSize="8" fill="#94a3b8">
+                        SVPWM 25 kHz
+                      </text>
+                      <text x="57" y="76" textAnchor="middle" fontSize="8" fill="#a5b4fc">
+                        - {inverterLossW.toFixed(0)}W Heat ({invPct}%)
+                      </text>
+                    </g>
+
+                    {/* Loss 1: Inverter Thermal Tap */}
+                    <path
+                      d="M 237 120 L 237 165"
+                      fill="none"
+                      stroke="#ef4444"
+                      strokeWidth="3"
+                      strokeDasharray="3 3"
+                    />
+                    <text
+                      x="237"
+                      y="180"
+                      textAnchor="middle"
+                      fontSize="8"
+                      fill="#ef4444"
+                      fontFamily="monospace"
+                    >
+                      ▼ Inverter Loss ({inverterLossW.toFixed(0)}W)
+                    </text>
+
+                    {/* Connector 2 */}
+                    <path
+                      d="M 295 75 L 350 75"
+                      fill="none"
+                      stroke="url(#magnetic-flow)"
+                      strokeWidth="12"
+                      opacity="0.8"
+                    />
+
+                    {/* Stage 3: BLDC Stator & Rotor Airgap Box */}
+                    <g transform="translate(350, 30)">
+                      <rect
+                        width="125"
+                        height="90"
+                        rx="8"
+                        fill="#1e293b"
+                        stroke="#f59e0b"
+                        strokeWidth="1.5"
+                      />
+                      <text
+                        x="62"
+                        y="24"
+                        textAnchor="middle"
+                        fontSize="10"
+                        fontWeight="bold"
+                        fill="#f59e0b"
+                      >
+                        3. BLDC STATOR
+                      </text>
+                      <text
+                        x="62"
+                        y="44"
+                        textAnchor="middle"
+                        fontSize="11"
+                        fontWeight="bold"
+                        fill="#ffffff"
+                      >
+                        {mechPowerIn.toFixed(0)} W Airgap
+                      </text>
+                      <text x="62" y="60" textAnchor="middle" fontSize="8" fill="#94a3b8">
+                        Lorentz τ = {motorTorqueNm.toFixed(2)} Nm
+                      </text>
+                      <text x="62" y="76" textAnchor="middle" fontSize="8" fill="#fcd34d">
+                        - {copperLossW.toFixed(0)}W Copper ({copperPct}%)
+                      </text>
+                    </g>
+
+                    {/* Loss 2: Copper Stator Thermal Tap */}
+                    <path
+                      d="M 412 120 L 412 165"
+                      fill="none"
+                      stroke="#ef4444"
+                      strokeWidth="4"
+                      strokeDasharray="3 3"
+                    />
+                    <text
+                      x="412"
+                      y="180"
+                      textAnchor="middle"
+                      fontSize="8"
+                      fill="#ef4444"
+                      fontFamily="monospace"
+                    >
+                      ▼ Joule Heating I²R ({copperLossW.toFixed(0)}W)
+                    </text>
+
+                    {/* Connector 3 */}
+                    <path
+                      d="M 475 75 L 530 75"
+                      fill="none"
+                      stroke="url(#mech-flow)"
+                      strokeWidth="10"
+                      opacity="0.8"
+                    />
+
+                    {/* Stage 4: Harmonic Drive Gearbox Box */}
+                    <g transform="translate(530, 30)">
+                      <rect
+                        width="120"
+                        height="90"
+                        rx="8"
+                        fill="#1e293b"
+                        stroke="#a855f7"
+                        strokeWidth="1.5"
+                      />
+                      <text
+                        x="60"
+                        y="24"
+                        textAnchor="middle"
+                        fontSize="10"
+                        fontWeight="bold"
+                        fill="#a855f7"
+                      >
+                        4. STRAIN WAVE
+                      </text>
+                      <text
+                        x="60"
+                        y="44"
+                        textAnchor="middle"
+                        fontSize="11"
+                        fontWeight="bold"
+                        fill="#ffffff"
+                      >
+                        {usefulOutputPowerW.toFixed(0)} W Work
+                      </text>
+                      <text x="60" y="60" textAnchor="middle" fontSize="8" fill="#94a3b8">
+                        {gearRatio}:1 Reduction
+                      </text>
+                      <text x="60" y="76" textAnchor="middle" fontSize="8" fill="#d8b4fe">
+                        - {gearboxLossW.toFixed(0)}W Friction ({gearPct}%)
+                      </text>
+                    </g>
+
+                    {/* Loss 3: Gearbox Friction Thermal Tap */}
+                    <path
+                      d="M 590 120 L 590 165"
+                      fill="none"
+                      stroke="#ef4444"
+                      strokeWidth="5"
+                      strokeDasharray="3 3"
+                    />
+                    <text
+                      x="590"
+                      y="180"
+                      textAnchor="middle"
+                      fontSize="8"
+                      fill="#ef4444"
+                      fontFamily="monospace"
+                    >
+                      ▼ Strain Wave Friction ({gearboxLossW.toFixed(0)}W)
+                    </text>
+
+                    {/* Final Output Arrow */}
+                    <path
+                      d="M 650 75 L 685 75"
+                      fill="none"
+                      stroke="#10b981"
+                      strokeWidth="8"
+                      markerEnd="url(#arrow)"
+                    />
+
+                    {/* Stage 5: Output Joint Flange */}
+                    <g transform="translate(685, 35)">
+                      <circle
+                        cx="35"
+                        cy="40"
+                        r="32"
+                        fill="#047857"
+                        stroke="#34d399"
+                        strokeWidth="2"
+                      />
+                      <text
+                        x="35"
+                        y="36"
+                        textAnchor="middle"
+                        fontSize="9"
+                        fontWeight="bold"
+                        fill="#ffffff"
+                      >
+                        JOINT
+                      </text>
+                      <text
+                        x="35"
+                        y="49"
+                        textAnchor="middle"
+                        fontSize="9"
+                        fontWeight="bold"
+                        fill="#a7f3d0"
+                      >
+                        {usefulPct}%
+                      </text>
+                    </g>
+                  </svg>
+                </div>
+
+                {/* Energy Distribution Stacked Progress Bar */}
+                <div className="space-y-1.5 pt-2">
+                  <div className="flex justify-between text-[11px] text-slate-300">
+                    <span>Power Flow Budget:</span>
+                    <span>
+                      Useful: <strong className="text-emerald-400">{usefulPct}%</strong> • Losses:{' '}
+                      <strong className="text-rose-400">
+                        {(100 - Number(usefulPct)).toFixed(1)}%
+                      </strong>
+                    </span>
+                  </div>
+                  <div className="w-full h-3.5 rounded-full bg-slate-800 overflow-hidden flex shadow-inner">
+                    <div
+                      className="bg-emerald-500 h-full transition-all"
+                      style={{ width: `${usefulPct}%` }}
+                      title={`Useful Mechanical Output: ${usefulPct}%`}
+                    />
+                    <div
+                      className="bg-purple-500 h-full transition-all"
+                      style={{ width: `${gearPct}%` }}
+                      title={`Gearbox Friction: ${gearPct}%`}
+                    />
+                    <div
+                      className="bg-amber-500 h-full transition-all"
+                      style={{ width: `${copperPct}%` }}
+                      title={`Stator Copper Joule Loss: ${copperPct}%`}
+                    />
+                    <div
+                      className="bg-indigo-500 h-full transition-all"
+                      style={{ width: `${invPct}%` }}
+                      title={`Inverter GaN Switching: ${invPct}%`}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between text-[9px] text-slate-400 pt-0.5">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> Useful
+                      Output ({usefulPct}%)
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-purple-500 inline-block" /> Gear
+                      Friction ({gearPct}%)
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" /> Copper
+                      Loss ({copperPct}%)
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-indigo-500 inline-block" /> Inverter
+                      Loss ({invPct}%)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Powertrain Controls & Architectural Tradeoffs */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Left: Dynamic Operating Point Sliders */}
+                <div className="p-5 rounded-2xl border border-parchment-200 dark:border-parchment-800 bg-white/80 dark:bg-parchment-900/80 font-mono text-xs space-y-4">
+                  <span className="font-bold text-ink-light dark:text-ink-dark flex items-center gap-1.5 uppercase">
+                    <Sliders className="w-3.5 h-3.5 text-amber-500" />
+                    Load Operating Point Sliders
+                  </span>
+
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-ink-muted">Motor Torque Demand (τ_m):</span>
+                      <span className="font-bold text-amber-600 dark:text-amber-400">
+                        {motorTorqueNm.toFixed(2)} Nm
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.2"
+                      max="3.0"
+                      step="0.1"
+                      value={motorTorqueNm}
+                      onChange={(e) => {
+                        playTick();
+                        setMotorTorqueNm(Number(e.target.value));
+                      }}
+                      className="w-full accent-amber-500 cursor-pointer"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-ink-muted">Motor Velocity (RPM):</span>
+                      <span className="font-bold text-blue-600 dark:text-blue-400">
+                        {motorRpm} RPM
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="500"
+                      max="4500"
+                      step="100"
+                      value={motorRpm}
+                      onChange={(e) => {
+                        playTick();
+                        setMotorRpm(Number(e.target.value));
+                      }}
+                      className="w-full accent-blue-500 cursor-pointer"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between mb-1.5">
+                      <span className="text-ink-muted">Gearbox Ratio:</span>
+                      <span className="font-bold text-purple-600 dark:text-purple-400">
+                        {gearRatio}:1
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-1.5">
+                      {[50, 80, 100, 160].map((r) => (
+                        <button
+                          key={r}
+                          onClick={() => {
+                            playTick();
+                            setGearRatio(r);
+                          }}
+                          className={clsx(
+                            'py-1 rounded-lg border text-xs font-bold transition-all cursor-pointer',
+                            gearRatio === r
+                              ? 'border-purple-500 bg-purple-500/15 text-purple-800 dark:text-purple-300'
+                              : 'border-parchment-300 dark:border-parchment-700 text-ink-muted'
+                          )}
+                        >
+                          {r}:1
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right: Architectural Takeaways */}
+                <div className="p-5 rounded-2xl border border-parchment-200 dark:border-parchment-800 bg-white/80 dark:bg-parchment-900/80 font-mono text-xs space-y-3">
+                  <span className="font-bold text-ink-light dark:text-ink-dark flex items-center gap-1.5 uppercase">
+                    <Info className="w-3.5 h-3.5 text-blue-500" />
+                    Robotics Engineering Tradeoff: QDD vs Harmonic
+                  </span>
+
+                  <div className="space-y-2 text-[11px] text-ink-muted dark:text-ink-darkMuted leading-relaxed">
+                    <div className="p-2.5 rounded-xl bg-parchment-100 dark:bg-parchment-950 border border-parchment-200 dark:border-parchment-800">
+                      <strong className="text-ink-light dark:text-ink-dark block font-bold mb-0.5">
+                        Quasi-Direct Drive (QDD, 6:1 to 10:1):
+                      </strong>
+                      High backdrivability (&gt;90%) and lower mechanical losses, but requires heavy
+                      motors with huge phase currents, increasing stator copper $I^2R$ heat. Ideal
+                      for explosive quadruped jumping.
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-parchment-100 dark:bg-parchment-950 border border-parchment-200 dark:border-parchment-800">
+                      <strong className="text-ink-light dark:text-ink-dark block font-bold mb-0.5">
+                        High-Reduction Harmonic Drive (50:1 to 160:1):
+                      </strong>
+                      Produces massive joint holding torque with tiny motor currents. However,
+                      strain-wave friction permanently caps mechanical efficiency at 80-85%,
+                      requiring dedicated thermal dissipation management.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
       {/* VIEW 5: Field-Oriented Control (FOC) & Space Vector PWM (SVPWM) */}
       {activeTab === 'foc' &&
         (() => {

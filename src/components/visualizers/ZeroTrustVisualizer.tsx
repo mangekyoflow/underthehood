@@ -393,7 +393,7 @@ export const ZeroTrustVisualizer: React.FC<Props> = ({
         </div>
 
         {/* Live SVG Diagram Canvas with Continuous Animated Motion Streams */}
-        <div className="w-full relative flex items-center justify-center py-2">
+        <div className="w-full relative flex items-center justify-center py-2 diagram-canvas-scroll">
           <svg
             viewBox="0 0 760 330"
             className="w-full h-auto max-h-[380px] overflow-visible select-none"

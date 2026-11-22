@@ -254,7 +254,7 @@ export const JwtVisualizer: React.FC<Props> = ({
         </div>
 
         {/* Live SVG Diagram Canvas with Continuous Flow Packets */}
-        <div className="w-full relative flex items-center justify-center py-4">
+        <div className="w-full relative flex items-center justify-center py-4 diagram-canvas-scroll">
           <svg
             viewBox="0 0 760 300"
             className="w-full h-auto max-h-[360px] overflow-visible select-none"

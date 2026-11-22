@@ -100,7 +100,7 @@ export const AcidConcurrencyCanvas: React.FC<AcidConcurrencyCanvasProps> = ({
       </div>
 
       {/* SVG Concurrency Flow Canvas */}
-      <div className="w-full relative flex items-center justify-center py-2">
+      <div className="w-full relative flex items-center justify-center py-2 diagram-canvas-scroll">
         <svg
           viewBox="0 0 760 260"
           className="w-full h-auto max-h-[320px] overflow-visible select-none"

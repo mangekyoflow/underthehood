@@ -1,10 +1,10 @@
 services:
-  designed-to-secure:
+  underthehood:
     build:
       context: .
       dockerfile: Dockerfile
-    image: designed-to-secure:latest
-    container_name: designed-to-secure-app
+    image: underthehood:latest
+    container_name: underthehood-app
     ports:
       - '127.0.0.1:8080:8080'
     restart: unless-stopped

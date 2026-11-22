@@ -48,8 +48,8 @@ const SUITE_TABS_CONFIG: readonly SuiteTabConfig[] = [
   { id: 'security', labelKey: 'tabSecurity', icon: ShieldCheck, badge: '23' },
   { id: 'route', labelKey: 'tabRoute', icon: Route, badge: '4' },
   { id: 'query', labelKey: 'tabQuery', icon: Database, badge: '3' },
-  { id: 'actuate', labelKey: 'tabActuate', icon: Bot, badge: '3' },
-  { id: 'silicon', labelKey: 'tabSilicon', icon: Microchip, badge: '2' },
+  { id: 'actuate', labelKey: 'tabActuate', icon: Bot, badge: '5' },
+  { id: 'silicon', labelKey: 'tabSilicon', icon: Microchip, badge: '4' },
 ] as const;
 
 interface Props {
@@ -122,39 +122,37 @@ export const Header: React.FC<Props> = ({
               onResetHome?.();
             }}
             className="flex items-center gap-1 sm:gap-2.5 text-left group cursor-pointer focus:outline-none min-h-[38px]"
-            title="Designed to Scale Suite: Security, Networking & Databases"
+            title="underthehood — Interactive Systems & Security Engineering"
           >
             <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-emerald-600 via-blue-600 to-purple-600 flex items-center justify-center text-white shadow-sm flex-shrink-0 group-hover:scale-105 transition-transform">
               <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <span className="font-serif font-bold text-sm sm:text-base lg:text-lg tracking-tight text-ink-light dark:text-ink-dark group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors whitespace-nowrap">
-              <span className="hidden sm:inline">Designed to </span>Secure
+              underthehood
             </span>
           </button>
 
-          {/* Curriculum Drawer Toggle Button (When on Security suite) */}
-          {currentSuiteTab === 'security' && (
-            <button
-              onClick={onToggleCurriculum}
-              className={`px-2 sm:px-2.5 py-1.5 rounded-xl border transition-all flex items-center gap-1 sm:gap-1.5 text-xs font-mono font-medium cursor-pointer min-h-[36px] sm:min-h-[38px] ${
-                isCurriculumOpen
-                  ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-800 dark:text-emerald-300 shadow-xs'
-                  : 'border-parchment-300 dark:border-parchment-700 bg-white/70 dark:bg-parchment-900/70 hover:bg-parchment-200 dark:hover:bg-parchment-800 text-ink-light dark:text-ink-dark shadow-xs'
-              }`}
-              title="Toggle Curriculum Index (23 modules)"
-              aria-label="Toggle Curriculum Index"
-            >
-              {isCurriculumOpen ? (
-                <X className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
-              ) : (
-                <BookOpen className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              )}
-              <span className="hidden sm:inline">{isCurriculumOpen ? t.close : t.courseIndex}</span>
-              <span className="px-1.5 py-0.2 rounded-full bg-parchment-200 dark:bg-parchment-800 text-[10px] text-ink-muted dark:text-ink-darkMuted font-mono">
-                23
-              </span>
-            </button>
-          )}
+          {/* Course Index Drawer Toggle Button (Accessible across all tracks) */}
+          <button
+            onClick={onToggleCurriculum}
+            className={`px-2 sm:px-2.5 py-1.5 rounded-xl border transition-all flex items-center gap-1 sm:gap-1.5 text-xs font-mono font-medium cursor-pointer min-h-[36px] sm:min-h-[38px] ${
+              isCurriculumOpen
+                ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-800 dark:text-emerald-300 shadow-xs'
+                : 'border-parchment-300 dark:border-parchment-700 bg-white/70 dark:bg-parchment-900/70 hover:bg-parchment-200 dark:hover:bg-parchment-800 text-ink-light dark:text-ink-dark shadow-xs'
+            }`}
+            title="Toggle Course Index (All 39 Modules)"
+            aria-label="Toggle Course Index"
+          >
+            {isCurriculumOpen ? (
+              <X className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+            ) : (
+              <BookOpen className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            )}
+            <span className="hidden sm:inline">{isCurriculumOpen ? t.close : t.courseIndex}</span>
+            <span className="px-1.5 py-0.2 rounded-full bg-parchment-200 dark:bg-parchment-800 text-[10px] text-ink-muted dark:text-ink-darkMuted font-mono">
+              39
+            </span>
+          </button>
         </div>
 
         {/* Center: Sleek, Adaptive Suite Navigation Tabs (Desktop & Tablet) */}
@@ -277,7 +275,7 @@ export const Header: React.FC<Props> = ({
             <select
               value={lang}
               onChange={(e) => onSelectLang(e.target.value as Language)}
-              className="pl-6 sm:pl-7 pr-5 sm:pr-6 py-1.5 rounded-xl border border-parchment-300 dark:border-parchment-700 bg-white dark:bg-parchment-900 hover:bg-parchment-50 dark:hover:bg-parchment-850 text-xs font-mono text-ink-light dark:text-ink-dark appearance-none cursor-pointer focus:outline-none focus:border-blue-500 transition-colors shadow-xs min-h-[36px]"
+              className="pl-6 sm:pl-7 pr-5 sm:pr-6 py-1.5 rounded-xl border border-parchment-300 dark:border-parchment-700 bg-white dark:bg-parchment-900 hover:bg-parchment-50 dark:hover:bg-parchment-800 text-xs font-mono text-ink-light dark:text-ink-dark appearance-none cursor-pointer focus:outline-none focus:border-blue-500 transition-colors shadow-xs min-h-[36px]"
               title="Select Language / Idioma / 言語"
               aria-label="Select Language"
             >
@@ -307,53 +305,6 @@ export const Header: React.FC<Props> = ({
             )}
           </button>
         </div>
-      </div>
-
-      {/* Mobile Responsive Suite Horizontal Scroll Strip */}
-      <div className="md:hidden border-t border-parchment-200 dark:border-parchment-800 bg-parchment-50/95 dark:bg-parchment-900/95 px-2.5 py-1.5 flex items-center gap-1.5 overflow-x-auto no-scrollbar touch-scroll">
-        {suiteTabs.map((tab) => {
-          const isActive = currentSuiteTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => {
-                playTick();
-                onSelectSuiteTab(tab.id);
-              }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all cursor-pointer min-h-[36px] ${
-                isActive
-                  ? 'bg-white dark:bg-parchment-800 text-ink-light dark:text-ink-dark font-bold shadow-xs border border-parchment-300 dark:border-parchment-700'
-                  : 'text-ink-muted hover:text-ink-light dark:hover:text-ink-dark bg-parchment-200/50 dark:bg-parchment-850/50'
-              }`}
-            >
-              <span
-                className={
-                  isActive
-                    ? tab.id === 'security'
-                      ? 'text-emerald-600 dark:text-emerald-400'
-                      : tab.id === 'route'
-                        ? 'text-cyan-600 dark:text-cyan-400'
-                        : tab.id === 'query'
-                          ? 'text-purple-600 dark:text-purple-400'
-                          : tab.id === 'actuate'
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : tab.id === 'silicon'
-                              ? 'text-emerald-600 dark:text-emerald-400'
-                              : 'text-amber-600 dark:text-amber-400'
-                    : 'text-ink-muted'
-                }
-              >
-                {tab.icon}
-              </span>
-              <span>{tab.label}</span>
-              {tab.badge && (
-                <span className="text-[9px] px-1 py-0.2 rounded-full bg-parchment-200 dark:bg-parchment-700 font-semibold">
-                  {tab.badge}
-                </span>
-              )}
-            </button>
-          );
-        })}
       </div>
 
       {/* Service Worker Update Toast Notification */}

@@ -104,7 +104,7 @@ export const LsmPipelineCanvas: React.FC<LsmPipelineCanvasProps> = ({
       </div>
 
       {/* Live SVG Diagram Canvas with Continuous Animated Flow Streams */}
-      <div className="w-full relative flex items-center justify-center py-2">
+      <div className="w-full relative flex items-center justify-center py-2 diagram-canvas-scroll">
         <svg
           viewBox="0 0 760 280"
           className="w-full h-auto max-h-[340px] overflow-visible select-none"

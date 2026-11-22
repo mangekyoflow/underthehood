@@ -23,8 +23,8 @@ export const ExplanationDrawer: React.FC<ExplanationDrawerProps> = ({ module, cl
       )}
     >
       {/* Header bar */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-parchment-200 dark:border-parchment-800 bg-parchment-100/60 dark:bg-parchment-950/60">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 sm:px-5 sm:py-3.5 border-b border-parchment-200 dark:border-parchment-800 bg-parchment-100/60 dark:bg-parchment-950/60">
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-wrap sm:flex-nowrap">
           <Badge
             variant={
               module.trackId === 'route'
@@ -45,20 +45,23 @@ export const ExplanationDrawer: React.FC<ExplanationDrawerProps> = ({ module, cl
                   ? '03 ACTUATE'
                   : '04 TAPEOUT'}
           </Badge>
-          <span className="text-xs font-mono text-ink-muted dark:text-ink-darkMuted">
+          <span className="text-xs font-mono text-ink-muted dark:text-ink-darkMuted shrink-0">
             MODULE {module.number}
           </span>
-          <h3 className="text-sm font-serif font-bold text-ink-light dark:text-ink-dark hidden sm:inline">
+          <span className="text-ink-muted/40 dark:text-ink-darkMuted/40 hidden sm:inline shrink-0 font-mono">
+            •
+          </span>
+          <h3 className="text-sm sm:text-base font-serif font-bold text-ink-light dark:text-ink-dark truncate min-w-0">
             {module.title}
           </h3>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
           <div className="flex bg-parchment-200/50 dark:bg-parchment-950 rounded-xl p-0.5 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono">
             <button
               onClick={() => setActiveTab('concept')}
               className={clsx(
-                'px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer',
+                'px-2.5 sm:px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer',
                 activeTab === 'concept'
                   ? 'bg-white dark:bg-parchment-800 text-ink-light dark:text-ink-dark font-bold shadow-xs border border-parchment-300 dark:border-parchment-700'
                   : 'text-ink-muted dark:text-ink-darkMuted hover:text-ink-light dark:hover:text-ink-dark'
@@ -71,7 +74,7 @@ export const ExplanationDrawer: React.FC<ExplanationDrawerProps> = ({ module, cl
             <button
               onClick={() => setActiveTab('architecture')}
               className={clsx(
-                'px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer',
+                'px-2.5 sm:px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer',
                 activeTab === 'architecture'
                   ? 'bg-white dark:bg-parchment-800 text-ink-light dark:text-ink-dark font-bold shadow-xs border border-parchment-300 dark:border-parchment-700'
                   : 'text-ink-muted dark:text-ink-darkMuted hover:text-ink-light dark:hover:text-ink-dark'
@@ -84,7 +87,7 @@ export const ExplanationDrawer: React.FC<ExplanationDrawerProps> = ({ module, cl
             <button
               onClick={() => setActiveTab('takeaway')}
               className={clsx(
-                'px-2.5 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer',
+                'px-2.5 sm:px-3 py-1 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer',
                 activeTab === 'takeaway'
                   ? 'bg-white dark:bg-parchment-800 text-ink-light dark:text-ink-dark font-bold shadow-xs border border-parchment-300 dark:border-parchment-700'
                   : 'text-ink-muted dark:text-ink-darkMuted hover:text-ink-light dark:hover:text-ink-dark'
@@ -97,8 +100,9 @@ export const ExplanationDrawer: React.FC<ExplanationDrawerProps> = ({ module, cl
 
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1.5 text-ink-muted hover:text-ink-light dark:hover:text-ink-dark rounded-lg hover:bg-parchment-200/60 dark:hover:bg-parchment-800 ml-1 transition-colors cursor-pointer"
+            className="p-1.5 min-h-[34px] min-w-[34px] flex items-center justify-center text-ink-muted hover:text-ink-light dark:hover:text-ink-dark rounded-lg hover:bg-parchment-200/60 dark:hover:bg-parchment-800 transition-colors cursor-pointer"
             title={isExpanded ? 'Collapse Panel' : 'Expand Panel'}
+            aria-label={isExpanded ? 'Collapse Panel' : 'Expand Panel'}
           >
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>

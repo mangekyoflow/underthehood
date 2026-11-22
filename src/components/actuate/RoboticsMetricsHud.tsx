@@ -95,7 +95,7 @@ export const RoboticsMetricsHud: React.FC<RoboticsMetricsHudProps> = ({
             <div
               key={`${stepNumber}-${cfg.key}`}
               className={clsx(
-                'text-base sm:text-xl lg:text-2xl font-mono font-bold tracking-tight transition-all duration-300 truncate',
+                'text-sm sm:text-lg lg:text-xl font-mono font-bold tracking-tight transition-all duration-300 truncate',
                 getStatusColor(metric.status)
               )}
               title={metric.value}

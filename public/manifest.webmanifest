@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "Under The Hood — Interactive Systems & Security Engineering",
-  "short_name": "UnderTheHood",
+  "name": "underthehood — Interactive Systems & Security Engineering",
+  "short_name": "underthehood",
   "description": "Interactive visual architecture, systems engineering, security, physical AI, and pre-silicon verification tutorials.",
   "start_url": "/",
   "scope": "/",
@@ -45,7 +45,7 @@
   ],
   "shortcuts": [
     {
-      "name": "Designed to Secure",
+      "name": "underthehood Security",
       "short_name": "Security",
       "description": "Interactive Web Security, Identity & Applied Cryptography",
       "url": "/#auth/oauth-pkce",

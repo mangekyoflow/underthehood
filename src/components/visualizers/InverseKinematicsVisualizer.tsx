@@ -395,7 +395,7 @@ export const InverseKinematicsVisualizer: React.FC<InverseKinematicsVisualizerPr
           <svg
             ref={svgRef}
             viewBox={`0 0 ${canvasWidth} ${canvasHeight}`}
-            className="w-full h-[320px] sm:h-[400px] cursor-crosshair touch-none"
+            className="w-full h-auto aspect-[720/440] max-h-[440px] cursor-crosshair touch-none"
             onPointerDown={handleSvgPointerDown}
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
@@ -576,23 +576,23 @@ export const InverseKinematicsVisualizer: React.FC<InverseKinematicsVisualizerPr
           </svg>
 
           {/* Floating On-Canvas Readout Badge */}
-          <div className="absolute top-3 right-3 bg-black/75 backdrop-blur-md p-3 rounded-xl border border-parchment-800 text-[11px] font-mono space-y-1 text-white">
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-parchment-400">Position Error:</span>
+          <div className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-black/80 backdrop-blur-md p-2 sm:p-3 rounded-xl border border-slate-800 text-[10px] sm:text-[11px] font-mono space-y-0.5 sm:space-y-1 text-white shadow-md pointer-events-none">
+            <div className="flex items-center justify-between gap-2 sm:gap-4">
+              <span className="text-slate-400">Position Error:</span>
               <span
                 className={clsx('font-bold', errorDist < 2 ? 'text-emerald-400' : 'text-amber-400')}
               >
-                {errorDist.toFixed(2)} mm
+                {errorDist.toFixed(1)} mm
               </span>
             </div>
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-parchment-400">Manipulability w:</span>
+            <div className="flex items-center justify-between gap-2 sm:gap-4">
+              <span className="text-slate-400">Manipulability:</span>
               <span className={clsx('font-bold', isSingular ? 'text-red-400' : 'text-emerald-400')}>
-                {manipulability.toFixed(1)}
+                {manipulability.toFixed(0)}
               </span>
             </div>
-            <div className="flex items-center justify-between gap-4">
-              <span className="text-parchment-400">Condition κ(J):</span>
+            <div className="flex items-center justify-between gap-2 sm:gap-4 hidden sm:flex">
+              <span className="text-slate-400">Condition κ(J):</span>
               <span
                 className={clsx(
                   'font-bold',

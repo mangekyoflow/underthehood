@@ -950,184 +950,186 @@ export const UrlLifecycleModule: React.FC<UrlLifecycleModuleProps> = ({
         </div>
 
         {/* Network Topology Visualizer Canvas */}
-        <div className="relative w-full h-[380px] sm:h-[420px] rounded-xl border border-parchment-200 dark:border-parchment-800 bg-parchment-50/80 dark:bg-parchment-950/80 overflow-hidden">
-          {/* SVG Animated Connections */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none">
-            <defs>
-              <linearGradient id="cyanLine" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.8" />
-              </linearGradient>
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="3" result="coloredBlur" />
-                <feMerge>
-                  <feMergeNode in="coloredBlur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
+        <div className="relative w-full h-[380px] sm:h-[420px] rounded-xl border border-parchment-200 dark:border-parchment-800 bg-parchment-50/80 dark:bg-parchment-950/80 overflow-x-auto touch-scroll">
+          <div className="relative min-w-[640px] sm:min-w-0 w-full h-full">
+            {/* SVG Animated Connections */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none">
+              <defs>
+                <linearGradient id="cyanLine" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.8" />
+                  <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.8" />
+                </linearGradient>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+                  <feMerge>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
 
-            {/* Static topology dashed guides */}
-            <path
-              d="M 100 130 Q 300 130 500 90"
-              stroke="currentColor"
-              className="text-parchment-300 dark:text-parchment-800"
-              strokeWidth="1.5"
-              strokeDasharray="4 4"
-              fill="none"
-            />
-            <path
-              d="M 120 180 Q 250 280 350 280"
-              stroke="currentColor"
-              className="text-parchment-300 dark:text-parchment-800"
-              strokeWidth="1.5"
-              strokeDasharray="4 4"
-              fill="none"
-            />
-            <path
-              d="M 350 280 L 520 280"
-              stroke="currentColor"
-              className="text-parchment-300 dark:text-parchment-800"
-              strokeWidth="1.5"
-              strokeDasharray="4 4"
-              fill="none"
-            />
-            <path
-              d="M 520 280 L 680 320"
-              stroke="currentColor"
-              className="text-parchment-300 dark:text-parchment-800"
-              strokeWidth="1.5"
-              strokeDasharray="4 4"
-              fill="none"
-            />
-            <path
-              d="M 680 320 L 820 320"
-              stroke="currentColor"
-              className="text-parchment-300 dark:text-parchment-800"
-              strokeWidth="1.5"
-              strokeDasharray="4 4"
-              fill="none"
-            />
-            <path
-              d="M 820 320 L 880 240"
-              stroke="currentColor"
-              className="text-parchment-300 dark:text-parchment-800"
-              strokeWidth="1.5"
-              strokeDasharray="4 4"
-              fill="none"
-            />
-            <path
-              d="M 650 90 L 850 90"
-              stroke="currentColor"
-              className="text-parchment-300 dark:text-parchment-800"
-              strokeWidth="1.5"
-              strokeDasharray="4 4"
-              fill="none"
-            />
-
-            {/* Active Packet Transmission Line */}
-            {activeSource && activeTarget && activeSource.id !== activeTarget.id && (
-              <line
-                x1={`${activeSource.x}%`}
-                y1={`${activeSource.y}%`}
-                x2={`${activeTarget.x}%`}
-                y2={`${activeTarget.y}%`}
-                stroke="url(#cyanLine)"
-                strokeWidth="3"
-                strokeDasharray="6 6"
-                className="animate-pulse"
-                filter="url(#glow)"
+              {/* Static topology dashed guides */}
+              <path
+                d="M 100 130 Q 300 130 500 90"
+                stroke="currentColor"
+                className="text-parchment-300 dark:text-parchment-800"
+                strokeWidth="1.5"
+                strokeDasharray="4 4"
+                fill="none"
               />
-            )}
-          </svg>
+              <path
+                d="M 120 180 Q 250 280 350 280"
+                stroke="currentColor"
+                className="text-parchment-300 dark:text-parchment-800"
+                strokeWidth="1.5"
+                strokeDasharray="4 4"
+                fill="none"
+              />
+              <path
+                d="M 350 280 L 520 280"
+                stroke="currentColor"
+                className="text-parchment-300 dark:text-parchment-800"
+                strokeWidth="1.5"
+                strokeDasharray="4 4"
+                fill="none"
+              />
+              <path
+                d="M 520 280 L 680 320"
+                stroke="currentColor"
+                className="text-parchment-300 dark:text-parchment-800"
+                strokeWidth="1.5"
+                strokeDasharray="4 4"
+                fill="none"
+              />
+              <path
+                d="M 680 320 L 820 320"
+                stroke="currentColor"
+                className="text-parchment-300 dark:text-parchment-800"
+                strokeWidth="1.5"
+                strokeDasharray="4 4"
+                fill="none"
+              />
+              <path
+                d="M 820 320 L 880 240"
+                stroke="currentColor"
+                className="text-parchment-300 dark:text-parchment-800"
+                strokeWidth="1.5"
+                strokeDasharray="4 4"
+                fill="none"
+              />
+              <path
+                d="M 650 90 L 850 90"
+                stroke="currentColor"
+                className="text-parchment-300 dark:text-parchment-800"
+                strokeWidth="1.5"
+                strokeDasharray="4 4"
+                fill="none"
+              />
 
-          {/* Render Nodes */}
-          {nodes.map((node) => {
-            const Icon = node.icon;
-            const isSource = activeSource?.id === node.id;
-            const isTarget = activeTarget?.id === node.id;
-            const isActive = isSource || isTarget;
+              {/* Active Packet Transmission Line */}
+              {activeSource && activeTarget && activeSource.id !== activeTarget.id && (
+                <line
+                  x1={`${activeSource.x}%`}
+                  y1={`${activeSource.y}%`}
+                  x2={`${activeTarget.x}%`}
+                  y2={`${activeTarget.y}%`}
+                  stroke="url(#cyanLine)"
+                  strokeWidth="3"
+                  strokeDasharray="6 6"
+                  className="animate-pulse"
+                  filter="url(#glow)"
+                />
+              )}
+            </svg>
 
-            return (
-              <div
-                key={node.id}
-                className={clsx(
-                  'absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer transition-all duration-300',
-                  isActive ? 'scale-110 z-20' : 'opacity-85 hover:opacity-100 z-10'
-                )}
-                style={{ left: `${node.x}%`, top: `${node.y}%` }}
-              >
+            {/* Render Nodes */}
+            {nodes.map((node) => {
+              const Icon = node.icon;
+              const isSource = activeSource?.id === node.id;
+              const isTarget = activeTarget?.id === node.id;
+              const isActive = isSource || isTarget;
+
+              return (
                 <div
+                  key={node.id}
                   className={clsx(
-                    'relative w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-300 shadow-md',
-                    isActive
-                      ? isSource
-                        ? 'bg-cyan-500/10 dark:bg-cyan-950 border-cyan-500 text-cyan-700 dark:text-cyan-300 ring-4 ring-cyan-500/20'
-                        : 'bg-emerald-500/10 dark:bg-emerald-950 border-emerald-500 text-emerald-700 dark:text-emerald-300 ring-4 ring-emerald-500/20'
-                      : 'bg-white dark:bg-parchment-900 border-parchment-300 dark:border-parchment-800 text-ink-muted dark:text-ink-darkMuted hover:border-parchment-400'
+                    'absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer transition-all duration-300',
+                    isActive ? 'scale-110 z-20' : 'opacity-85 hover:opacity-100 z-10'
                   )}
+                  style={{ left: `${node.x}%`, top: `${node.y}%` }}
                 >
-                  <Icon className="w-5 h-5" />
-                  {isActive && (
-                    <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
-                      <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-cyan-500" />
-                    </span>
-                  )}
-                </div>
-
-                <div className="mt-2 text-center whitespace-nowrap">
                   <div
                     className={clsx(
-                      'text-[11px] font-semibold font-mono',
+                      'relative w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-300 shadow-md',
                       isActive
-                        ? 'text-ink-light dark:text-ink-dark'
-                        : 'text-ink-muted dark:text-ink-darkMuted'
+                        ? isSource
+                          ? 'bg-cyan-500/10 dark:bg-cyan-950 border-cyan-500 text-cyan-700 dark:text-cyan-300 ring-4 ring-cyan-500/20'
+                          : 'bg-emerald-500/10 dark:bg-emerald-950 border-emerald-500 text-emerald-700 dark:text-emerald-300 ring-4 ring-emerald-500/20'
+                        : 'bg-white dark:bg-parchment-900 border-parchment-300 dark:border-parchment-800 text-ink-muted dark:text-ink-darkMuted hover:border-parchment-400'
                     )}
                   >
-                    {node.label}
+                    <Icon className="w-5 h-5" />
+                    {isActive && (
+                      <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-cyan-500" />
+                      </span>
+                    )}
                   </div>
-                  <div className="text-[9px] font-mono text-ink-muted dark:text-ink-darkMuted">
-                    {node.sub}
+
+                  <div className="mt-2 text-center whitespace-nowrap">
+                    <div
+                      className={clsx(
+                        'text-[11px] font-semibold font-mono',
+                        isActive
+                          ? 'text-ink-light dark:text-ink-dark'
+                          : 'text-ink-muted dark:text-ink-darkMuted'
+                      )}
+                    >
+                      {node.label}
+                    </div>
+                    <div className="text-[9px] font-mono text-ink-muted dark:text-ink-darkMuted">
+                      {node.sub}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
 
-          {/* In-Flight Packet Inspector Pill */}
-          <div className="absolute bottom-3 left-3 right-3 sm:left-4 sm:right-auto sm:max-w-md p-3 rounded-xl border border-parchment-200 dark:border-parchment-800 bg-white/95 dark:bg-parchment-900/95 backdrop-blur-md shadow-lg">
-            <div className="flex items-center justify-between gap-2 mb-1.5">
-              <div className="flex items-center gap-1.5 font-mono text-xs">
-                <span className="w-2 h-2 rounded-full bg-cyan-500 animate-ping-slow" />
-                <span className="text-ink-muted dark:text-ink-darkMuted font-semibold">
-                  PROTOCOL:
-                </span>
-                <span className="text-cyan-700 dark:text-cyan-300 font-bold">
-                  {currentStep.protocol}
-                </span>
-              </div>
-              <span className="text-[10px] font-mono text-ink-muted dark:text-ink-darkMuted bg-parchment-100 dark:bg-parchment-800 px-1.5 py-0.5 rounded border border-parchment-200 dark:border-parchment-700 font-semibold">
-                +{currentStep.latencyMs} ms
-              </span>
-            </div>
-
-            <div className="text-xs font-mono font-medium text-ink-light dark:text-ink-dark truncate">
-              {currentStep.packetSummary}
-            </div>
-
-            <div className="mt-2 pt-2 border-t border-parchment-200 dark:border-parchment-800 grid grid-cols-2 gap-2 text-[10px] font-mono text-ink-muted dark:text-ink-darkMuted">
-              <div>
-                <span>SRC: </span>
-                <span className="text-ink-light dark:text-ink-dark">
-                  {currentStep.srcIp}:{currentStep.srcPort || 'any'}
+            {/* In-Flight Packet Inspector Pill */}
+            <div className="absolute bottom-3 left-3 right-3 sm:left-4 sm:right-auto sm:max-w-md p-3 rounded-xl border border-parchment-200 dark:border-parchment-800 bg-white/95 dark:bg-parchment-900/95 backdrop-blur-md shadow-lg">
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <div className="flex items-center gap-1.5 font-mono text-xs">
+                  <span className="w-2 h-2 rounded-full bg-cyan-500 animate-ping-slow" />
+                  <span className="text-ink-muted dark:text-ink-darkMuted font-semibold">
+                    PROTOCOL:
+                  </span>
+                  <span className="text-cyan-700 dark:text-cyan-300 font-bold">
+                    {currentStep.protocol}
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-ink-muted dark:text-ink-darkMuted bg-parchment-100 dark:bg-parchment-800 px-1.5 py-0.5 rounded border border-parchment-200 dark:border-parchment-700 font-semibold">
+                  +{currentStep.latencyMs} ms
                 </span>
               </div>
-              <div>
-                <span>DST: </span>
-                <span className="text-ink-light dark:text-ink-dark">
-                  {currentStep.dstIp}:{currentStep.dstPort || 'any'}
-                </span>
+
+              <div className="text-xs font-mono font-medium text-ink-light dark:text-ink-dark truncate">
+                {currentStep.packetSummary}
+              </div>
+
+              <div className="mt-2 pt-2 border-t border-parchment-200 dark:border-parchment-800 grid grid-cols-2 gap-2 text-[10px] font-mono text-ink-muted dark:text-ink-darkMuted">
+                <div>
+                  <span>SRC: </span>
+                  <span className="text-ink-light dark:text-ink-dark">
+                    {currentStep.srcIp}:{currentStep.srcPort || 'any'}
+                  </span>
+                </div>
+                <div>
+                  <span>DST: </span>
+                  <span className="text-ink-light dark:text-ink-dark">
+                    {currentStep.dstIp}:{currentStep.dstPort || 'any'}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

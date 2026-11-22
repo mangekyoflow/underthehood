@@ -6,6 +6,7 @@ import { ThreatModelCard } from './components/ThreatModelCard';
 import { LessonSidebar } from './components/LessonSidebar';
 import { DeepDiveSection } from './components/DeepDiveSection';
 import { SearchModal } from './components/SearchModal';
+import { AdaptiveMobileNav } from './components/AdaptiveMobileNav';
 import { LESSONS } from './data/lessons';
 import {
   SecurityTrackId,
@@ -115,6 +116,17 @@ export function App() {
     const first = parts[0];
     const second = parts[1];
 
+    // Global Course Index hash routes
+    if (
+      first === 'index' ||
+      first === 'curriculum' ||
+      first === 'course-index' ||
+      first === 'all-modules'
+    ) {
+      setIsCurriculumOpen(true);
+      return;
+    }
+
     if (first === 'route') {
       setCurrentSuiteTab('route');
       if (second) {
@@ -212,6 +224,7 @@ export function App() {
       'uvm-verification',
       'pre-silicon-emulation',
       'riscv-pipeline',
+      'silicon-structure',
     ];
     if (siliconModules.includes(first as SiliconModuleId)) {
       setCurrentSuiteTab('silicon');
@@ -378,6 +391,13 @@ export function App() {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsSearchOpen((prev) => !prev);
+        return;
+      }
+
+      // Command+I / Ctrl+I toggles Course Index
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'i') {
+        e.preventDefault();
+        setIsCurriculumOpen((prev) => !prev);
         return;
       }
 
@@ -558,17 +578,25 @@ export function App() {
         }}
       />
 
-      {/* Security Curriculum Sidebar Drawer */}
+      {/* Interactive Course Index Sidebar Drawer (All 39 Modules) */}
       <LessonSidebar
         lessons={LESSONS}
         activeLessonId={activeLessonId}
         onSelectLesson={handleSelectLesson}
+        onSelectSystemsModule={(tab, mod) => {
+          handleNavigate(tab, mod);
+        }}
+        currentSuiteTab={currentSuiteTab}
+        activeRouteModule={activeRouteModule}
+        activeQueryModule={activeQueryModule}
+        activeActuateModule={activeActuateModule}
+        activeSiliconModule={activeSiliconModule}
         isOpen={isCurriculumOpen}
         onClose={() => setIsCurriculumOpen(false)}
         lang={lang}
       />
 
-      {/* Global Command Palette / Search Modal (Searches across all 29 modules) */}
+      {/* Global Command Palette / Search Modal (Searches across all 39 modules) */}
       <SearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
@@ -585,7 +613,7 @@ export function App() {
 
       {/* MAIN VIEW: Security Course */}
       {currentSuiteTab === 'security' && (
-        <main className="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6 animate-fade-in">
+        <main className="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-5 sm:space-y-6 animate-fade-in pb-24 md:pb-8">
           {/* Security Tracks Segmented Navigation Bar */}
           <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto no-scrollbar touch-scroll shrink-0 max-w-full">
             {securityTracks.map((track) => {
@@ -786,13 +814,14 @@ export function App() {
 
       {/* MAIN VIEW: Designed to Route (Networking Track) */}
       {currentSuiteTab === 'route' && (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 animate-fade-in">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 animate-fade-in pb-24 md:pb-8">
           <RouteTrackView
             initialModuleId={activeRouteModule}
             initialStep={routeStep}
             onStepChange={(s) => setRouteStep(s)}
             progress={progress}
             onChallengeComplete={handleChallengeComplete}
+            onToggleCurriculum={() => setIsCurriculumOpen(true)}
             onSelectModule={(id) => {
               setActiveRouteModule(id);
               const updated = markModuleVisited(id);
@@ -804,11 +833,12 @@ export function App() {
 
       {/* MAIN VIEW: Designed to Query (Database Track) */}
       {currentSuiteTab === 'query' && (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 animate-fade-in">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 animate-fade-in pb-24 md:pb-8">
           <QueryTrackView
             initialModuleId={activeQueryModule}
             progress={progress}
             onChallengeComplete={handleChallengeComplete}
+            onToggleCurriculum={() => setIsCurriculumOpen(true)}
             onSelectModule={(id) => {
               setActiveQueryModule(id);
               const updated = markModuleVisited(id);
@@ -820,13 +850,14 @@ export function App() {
 
       {/* MAIN VIEW: Designed to Actuate (Robotics & Physical AI Track) */}
       {currentSuiteTab === 'actuate' && (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 animate-fade-in">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 animate-fade-in pb-24 md:pb-8">
           <ActuateTrackView
             initialModuleId={activeActuateModule}
             initialStep={actuateStep}
             onStepChange={setActuateStep}
             progress={progress}
             onChallengeComplete={handleChallengeComplete}
+            onToggleCurriculum={() => setIsCurriculumOpen(true)}
             onSelectModule={(id) => {
               if (id !== 'actuator-structure') {
                 setActiveActuateModule(id as ActuateModuleId);
@@ -840,11 +871,12 @@ export function App() {
 
       {/* MAIN VIEW: Designed to Tapeout (VLSI & Pre-Silicon Emulation Track) */}
       {currentSuiteTab === 'silicon' && (
-        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 animate-fade-in">
+        <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 animate-fade-in pb-24 md:pb-8">
           <SiliconTrackView
             initialModuleId={activeSiliconModule}
             progress={progress}
             onChallengeComplete={handleChallengeComplete}
+            onToggleCurriculum={() => setIsCurriculumOpen(true)}
             onSelectModule={(id) => {
               if (id !== 'silicon-structure') {
                 setActiveSiliconModule(id as SiliconModuleId);
@@ -857,7 +889,7 @@ export function App() {
       )}
 
       {/* Platform Footer */}
-      <footer className="w-full border-t border-parchment-200 dark:border-parchment-800 bg-parchment-100/60 dark:bg-parchment-950/60 py-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] transition-colors">
+      <footer className="w-full border-t border-parchment-200 dark:border-parchment-800 bg-parchment-100/60 dark:bg-parchment-950/60 py-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] mb-16 md:mb-0 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between text-xs text-ink-muted dark:text-ink-darkMuted font-mono">
           <span className="font-serif font-bold text-sm text-ink-light dark:text-ink-dark">
             underthehood
@@ -873,6 +905,19 @@ export function App() {
           </a>
         </div>
       </footer>
+
+      {/* Adaptive Mobile Bottom Navigation Bar (Docked on mobile & small viewports) */}
+      <AdaptiveMobileNav
+        currentSuiteTab={currentSuiteTab}
+        onSelectSuiteTab={(tab) => {
+          setCurrentSuiteTab(tab);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onOpenSearch={() => setIsSearchOpen(true)}
+        onToggleCurriculum={() => setIsCurriculumOpen((prev) => !prev)}
+        isCurriculumOpen={isCurriculumOpen}
+        lang={lang}
+      />
     </div>
   );
 }

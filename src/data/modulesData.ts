@@ -1080,4 +1080,122 @@ export const MODULES: Record<ModuleId, ModuleDefinition> = {
       },
     ],
   },
+  'actuator-structure': {
+    id: 'actuator-structure',
+    trackId: 'actuate',
+    number: '10b',
+    title: 'Actuator Anatomy & Gearing',
+    subtitle: 'Harmonic Reducers, Cycloidal Drives & Rotor-Stator Flux Cascade',
+    tagline:
+      'Inspect robotic joint physics: exploded CAD assembly, zero-backlash strain wave gears, cycloidal pins, and power loss cascades.',
+    accentColor: 'robotics',
+    overview:
+      'Modern humanoid and robotic arm actuators pack brushless frameless motors, zero-backlash high-ratio gear reducers, dual absolute encoders, and integrated GaN inverter electronics into a compact joint unit.',
+    concept:
+      'Robotic joints require tremendous torque density and zero backlash for dynamic stability. Harmonic drive reducers utilize an elliptical wave generator flexing a thin cup against a circular spline to achieve 50:1 to 160:1 ratios with zero backlash. Cycloidal drives use rolling pin discs for extreme shock load resistance. Power flows from the battery bus through the inverter, copper stator coils, magnetic air gap, and mechanical gearing, with losses quantified at each stage.',
+    architectureDetails: {
+      components: [
+        {
+          name: 'CNC 7075-T6 Housing',
+          role: 'Rigid Structural Shell',
+          details:
+            'Anodized aircraft aluminum housing dissipating motor stator Joule heating with ±5µm bearing bore concentricity.',
+        },
+        {
+          name: 'Frameless BLDC / PMSM Motor',
+          role: 'Electromagnetic Torque Generator',
+          details:
+            'High-pole-pair permanent magnet rotor with 0.5mm air gap and stator windings generating electromagnetic torque.',
+        },
+        {
+          name: 'Harmonic / Cycloidal Reducer',
+          role: 'Torque Multiplier & Speed Reducer',
+          details:
+            'Strain wave flexspline or cycloidal disc multiplying motor torque by 50:1–160:1 with near-zero angular backlash.',
+        },
+        {
+          name: 'Dual Absolute Encoders',
+          role: 'Rotor & Joint Angle Feedback',
+          details:
+            '19-bit optical/magnetic encoders measuring high-speed motor rotor angle for FOC commutation and output link position.',
+        },
+        {
+          name: 'Integrated FOC Inverter PCB',
+          role: 'Motor Commutation & Control',
+          details:
+            'High-frequency GaN FET H-bridge switching up to 50 kHz with onboard current shunts and real-time DSP.',
+        },
+      ],
+    },
+    keyTakeaway:
+      'Gearing reduces required motor torque by ratio N but increases reflected inertia by N^2. In dynamic robotics, choosing between low-ratio quasi-direct drive (QDD) and high-ratio harmonic drives dictates transparency and impact survivability.',
+    challenges: [
+      {
+        id: 'challenge-actuator-1',
+        moduleId: 'actuator-structure',
+        title: 'Inspect Gearmesh Backlash',
+        description:
+          'Switch between Harmonic Drive and Cycloidal Drive modes to observe the tooth contact mechanics.',
+        hint: 'Use the Transmission mode tab to inspect harmonic flexspline tooth engagement.',
+        targetCriteria: 'actuator-transmission-inspected',
+        completed: false,
+      },
+    ],
+  },
+  'silicon-structure': {
+    id: 'silicon-structure',
+    trackId: 'silicon',
+    number: '13b',
+    title: 'Silicon Structure & Die Layout',
+    subtitle: 'Wafer Floorplanning, Metal Interconnect Stack & GAA Transistors',
+    tagline:
+      'Examine semiconductor physics from 300mm wafer reticles down to 14-layer copper interconnects and Gate-All-Around (GAA) nanosheets.',
+    accentColor: 'silicon',
+    overview:
+      'Modern microprocessors and AI accelerators are monolithic marvels containing tens of billions of transistors etched into silicon, organized across hierarchically scaled metal interconnect layers.',
+    concept:
+      'Modern VLSI dies balance compute tiles, SRAM caches, clock distribution networks, and high-speed SerDes I/O. Interconnect layers scale from tight pitch M1-M4 local routing up to thick M12-M14 global power distribution planes (VDD/VSS). At the physical device level, Gate-All-Around (GAA) nanosheet transistors wrap gate dielectric completely around silicon channels to eliminate sub-threshold leakage at sub-3nm nodes.',
+    architectureDetails: {
+      components: [
+        {
+          name: 'Systolic AI Tensor Array',
+          role: 'Matrix Multiplication Compute',
+          details:
+            'High-throughput systolic tile running BF16/INT8 operations at 1.0 GHz with local register files.',
+        },
+        {
+          name: 'Dual-Port SRAM Cache Bank',
+          role: 'Ultra-Low Latency Storage',
+          details:
+            '6T SRAM cells providing 1-cycle latency read/write pipelines alongside the compute cores.',
+        },
+        {
+          name: '14-Metal Layer Stack',
+          role: 'Hierarchical Interconnect',
+          details:
+            'Progressive metal wire scaling from 24nm pitch copper wires at M1 up to 1200nm thick copper straps at M14.',
+        },
+        {
+          name: 'GAA Nanosheet Transistors',
+          role: 'Logic Switching Channel',
+          details:
+            'Horizontal silicon nanosheets completely encircled by high-k metal gates (HKMG) for ultimate electrostatic channel control.',
+        },
+      ],
+    },
+    keyTakeaway:
+      'Modern chip design is dominated by wire delay and RC parasitics rather than transistor switching speed. Metal layer planning and power delivery integrity (IR drop) dictate maximum operating frequency.',
+    challenges: [
+      {
+        id: 'challenge-silicon-1',
+        moduleId: 'silicon-structure',
+        title: 'Inspect Interconnect Scaling',
+        description:
+          'Examine the 14-layer metal interconnect stack and compare M1 wire pitch against M14 power mesh straps.',
+        hint: 'Switch to the 14-Layer Interconnect view to inspect wire dimensions and RC delays.',
+        targetCriteria: 'silicon-stack-inspected',
+        completed: false,
+      },
+    ],
+  },
 };

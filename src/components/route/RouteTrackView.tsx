@@ -6,6 +6,7 @@ import { HttpRaceModule } from './HttpRaceModule';
 import { NapkinMathModule } from './NapkinMathModule';
 import { Badge } from '../common/Badge';
 import { playTick } from '../../lib/sound';
+import { BookOpen } from 'lucide-react';
 import clsx from 'clsx';
 
 interface RouteTrackViewProps {
@@ -15,6 +16,7 @@ interface RouteTrackViewProps {
   progress: UserProgress;
   onChallengeComplete: (id: string) => void;
   onSelectModule?: (id: RouteModuleId) => void;
+  onToggleCurriculum?: () => void;
 }
 
 const ROUTE_MODULES = [
@@ -51,6 +53,7 @@ export const RouteTrackView: React.FC<RouteTrackViewProps> = ({
   progress,
   onChallengeComplete,
   onSelectModule,
+  onToggleCurriculum,
 }) => {
   const [activeModule, setActiveModule] = useState<RouteModuleId>(initialModuleId);
 
@@ -86,34 +89,54 @@ export const RouteTrackView: React.FC<RouteTrackViewProps> = ({
           </p>
         </div>
 
-        {/* Submodule Segmented Pills */}
-        <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto touch-scroll no-scrollbar max-w-full shrink-0">
-          {ROUTE_MODULES.map((m) => {
-            const isActive = activeModule === m.id;
-            return (
-              <button
-                key={m.id}
-                onClick={() => handleSelect(m.id)}
-                className={clsx(
-                  'px-3 sm:px-3.5 py-1.5 min-h-[36px] rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0',
-                  isActive
-                    ? 'bg-white dark:bg-parchment-800 text-ink-light dark:text-ink-dark font-bold shadow-sm border border-parchment-300 dark:border-parchment-700'
-                    : 'text-ink-muted hover:text-ink-light dark:hover:text-ink-dark hover:bg-parchment-200/60 dark:hover:bg-parchment-800/60'
-                )}
-              >
-                <span
-                  className={
-                    isActive ? 'text-cyan-700 dark:text-cyan-400 font-bold' : 'text-ink-muted'
-                  }
+        {/* Submodule Segmented Pills & Course Index Trigger */}
+        <div className="flex flex-wrap lg:flex-nowrap items-center gap-2 max-w-full shrink-0">
+          {onToggleCurriculum && (
+            <button
+              onClick={() => {
+                playTick();
+                onToggleCurriculum();
+              }}
+              className="px-3 sm:px-3.5 py-1.5 min-h-[38px] rounded-xl border border-cyan-500/40 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 font-mono text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-xs shrink-0 whitespace-nowrap"
+              title="Open Course Index (All 39 Modules)"
+              aria-label="Open Course Index"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Course Index</span>
+              <span className="px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-[10px] font-mono">
+                39
+              </span>
+            </button>
+          )}
+
+          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-parchment-200/50 dark:bg-parchment-900/50 border border-parchment-300/70 dark:border-parchment-800 text-xs font-mono overflow-x-auto touch-scroll no-scrollbar max-w-full shrink-0">
+            {ROUTE_MODULES.map((m) => {
+              const isActive = activeModule === m.id;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => handleSelect(m.id)}
+                  className={clsx(
+                    'px-3 sm:px-3.5 py-1.5 min-h-[36px] rounded-xl transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap shrink-0',
+                    isActive
+                      ? 'bg-white dark:bg-parchment-800 text-ink-light dark:text-ink-dark font-bold shadow-sm border border-parchment-300 dark:border-parchment-700'
+                      : 'text-ink-muted hover:text-ink-light dark:hover:text-ink-dark hover:bg-parchment-200/60 dark:hover:bg-parchment-800/60'
+                  )}
                 >
-                  {m.num}
-                </span>
-                <span>
-                  {m.title.split(' ')[0]} {m.title.split(' ')[1]}
-                </span>
-              </button>
-            );
-          })}
+                  <span
+                    className={
+                      isActive ? 'text-cyan-700 dark:text-cyan-400 font-bold' : 'text-ink-muted'
+                    }
+                  >
+                    {m.num}
+                  </span>
+                  <span>
+                    {m.title.split(' ')[0]} {m.title.split(' ')[1]}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

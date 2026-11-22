@@ -120,7 +120,7 @@ Use the instant search bar in the header or press `⌘K` anywhere to search acro
 
 ```bash
 # Navigate to project
-cd /Users/akhilpasham/proyecto/designed-to-secure
+cd /Users/akhilpasham/proyecto/underthehood
 
 # Run dev server
 npm run dev

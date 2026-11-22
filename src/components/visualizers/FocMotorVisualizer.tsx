@@ -422,7 +422,7 @@ export const FocMotorVisualizer: React.FC<FocMotorVisualizerProps> = ({
               </svg>
 
               {/* Floating Canvas Overlays */}
-              <div className="absolute top-3 left-3 text-[10px] space-y-1">
+              <div className="absolute top-3 left-3 text-[10px] space-y-1 pointer-events-none bg-slate-950/70 p-1.5 rounded-lg border border-slate-800 backdrop-blur-xs">
                 <div>
                   <span className="text-slate-400">Rotor θ_e: </span>
                   <span className="text-cyan-400 font-bold">{focAngle.toFixed(1)}°</span>
@@ -433,7 +433,7 @@ export const FocMotorVisualizer: React.FC<FocMotorVisualizerProps> = ({
                 </div>
               </div>
 
-              <div className="absolute bottom-3 right-3 text-[10px] text-right space-y-1">
+              <div className="absolute bottom-3 right-3 text-[10px] text-right space-y-1 pointer-events-none bg-slate-950/70 p-1.5 rounded-lg border border-slate-800 backdrop-blur-xs">
                 <div>
                   <span className="text-slate-400">Direct Id (Flux): </span>
                   <span

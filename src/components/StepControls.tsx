@@ -68,7 +68,7 @@ export const StepControls: React.FC<Props> = ({
                 playTick();
                 onSelectStep(idx);
               }}
-              className={`h-2.5 rounded-full transition-all duration-300 ease-out cursor-pointer min-h-[14px] flex items-center ${
+              className={`step-dot-touch h-2.5 rounded-full transition-all duration-300 ease-out cursor-pointer flex items-center ${
                 idx === currentStep
                   ? 'w-7 bg-blue-600 dark:bg-blue-400 shadow-sm scale-105'
                   : idx < currentStep

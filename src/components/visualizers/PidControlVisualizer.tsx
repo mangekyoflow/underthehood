@@ -308,10 +308,10 @@ export const PidControlVisualizer: React.FC<PidControlVisualizerProps> = ({
                 CLOSED-LOOP DYNAMICS
               </span>
             </div>
-            <h3 className="text-xl sm:text-2xl font-serif font-bold text-ink-light dark:text-ink-dark">
-              Closed-Loop PID Control &amp; Step Response
+            <h3 className="text-xl sm:text-2xl font-serif font-bold text-ink-light dark:text-ink-dark leading-tight">
+              Closed-Loop PID Control &amp; Actuation
             </h3>
-            <p className="text-xs font-sans text-ink-muted dark:text-ink-darkMuted mt-1">
+            <p className="text-xs sm:text-sm font-sans text-ink-muted dark:text-ink-darkMuted mt-1.5 leading-relaxed">
               Adjust gains in real-time and observe the physical robot arm counteract inertia,
               gravity droop, and external load disturbances.
             </p>
@@ -463,7 +463,7 @@ export const PidControlVisualizer: React.FC<PidControlVisualizerProps> = ({
           </div>
 
           {/* Continuous SVG Signal Flow Diagram */}
-          <div className="w-full bg-slate-900/90 rounded-xl p-3 border border-slate-800 relative overflow-hidden select-none">
+          <div className="w-full bg-slate-900/90 rounded-xl p-3 border border-slate-800 relative select-none diagram-canvas-scroll">
             <svg viewBox="0 0 760 175" className="w-full h-auto drop-shadow-sm">
               <defs>
                 <marker
@@ -1321,11 +1321,16 @@ export const PidControlVisualizer: React.FC<PidControlVisualizerProps> = ({
       </div>
 
       {/* Interactive Challenges Section */}
-      <div className="space-y-3">
+      <div className="space-y-3.5 pt-3 border-t border-parchment-200/80 dark:border-parchment-800/80">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-mono uppercase tracking-wider text-ink-muted dark:text-ink-darkMuted font-bold">
-            Interactive Actuator Challenges
-          </h4>
+          <div className="flex items-center gap-2">
+            <h4 className="text-xs font-mono uppercase tracking-wider text-ink-muted dark:text-ink-darkMuted font-bold">
+              Interactive Actuator Challenges
+            </h4>
+            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold">
+              Closed-Loop Verification
+            </span>
+          </div>
           <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
             {moduleData.challenges.filter((c) => completedChallenges[c.id]).length} /{' '}
             {moduleData.challenges.length} Solved
@@ -1346,7 +1351,17 @@ export const PidControlVisualizer: React.FC<PidControlVisualizerProps> = ({
       </div>
 
       {/* Architecture Deep Dive & Engineering Principle Drawer */}
-      <ExplanationDrawer module={moduleData} />
+      <div className="space-y-3 pt-2">
+        <div className="flex items-center justify-between">
+          <h4 className="text-xs font-mono uppercase tracking-wider text-ink-muted dark:text-ink-darkMuted font-bold">
+            Actuator Architecture &amp; Theory
+          </h4>
+          <span className="text-xs font-mono text-ink-muted dark:text-ink-darkMuted">
+            Engineering Principles &amp; Component Breakdown
+          </span>
+        </div>
+        <ExplanationDrawer module={moduleData} />
+      </div>
     </div>
   );
 };

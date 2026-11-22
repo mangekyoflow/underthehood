@@ -408,7 +408,7 @@ export const NapkinMathVisualizer: React.FC<Props> = ({
           </div>
 
           {/* SVG Diagram Canvas */}
-          <div className="py-6 px-2 relative min-h-[340px] flex items-center justify-center">
+          <div className="py-6 px-2 relative min-h-[340px] flex items-center justify-center diagram-canvas-scroll">
             <svg viewBox="0 0 760 320" className="w-full h-auto max-h-[380px] overflow-visible">
               <defs>
                 <linearGradient id="linkGradient" x1="0%" y1="0%" x2="100%" y2="0%">

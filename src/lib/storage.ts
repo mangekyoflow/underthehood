@@ -14,9 +14,11 @@ const VALID_MODULE_IDS: readonly ModuleId[] = [
   'ros2-teleoperation',
   'inverse-kinematics',
   'foc-motor-control',
+  'actuator-structure',
   'uvm-verification',
   'pre-silicon-emulation',
   'riscv-pipeline',
+  'silicon-structure',
 ] as const;
 
 function isModuleId(id: unknown): id is ModuleId {
@@ -36,9 +38,11 @@ const defaultProgress: UserProgress = {
     'ros2-teleoperation': false,
     'inverse-kinematics': false,
     'foc-motor-control': false,
+    'actuator-structure': false,
     'uvm-verification': false,
     'pre-silicon-emulation': false,
     'riscv-pipeline': false,
+    'silicon-structure': false,
   },
   completedChallenges: {},
   completedExperiments: {},

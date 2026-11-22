@@ -434,7 +434,7 @@ export const RosTeleopVisualizer: React.FC<RosTeleopVisualizerProps> = ({
           </div>
 
           {/* SVG Living Topology Diagram */}
-          <div className="w-full bg-slate-900/90 rounded-xl p-3 border border-slate-800 relative overflow-hidden select-none">
+          <div className="w-full bg-slate-900/90 rounded-xl p-3 border border-slate-800 relative select-none diagram-canvas-scroll">
             <svg viewBox="0 0 760 190" className="w-full h-auto drop-shadow-sm">
               <defs>
                 <marker
@@ -752,7 +752,7 @@ export const RosTeleopVisualizer: React.FC<RosTeleopVisualizerProps> = ({
             </div>
 
             {/* Arena SVG Canvas */}
-            <div className="w-full h-56 sm:h-64 bg-white dark:bg-parchment-900 rounded-xl border border-parchment-200 dark:border-parchment-800 relative overflow-hidden">
+            <div className="w-full aspect-square max-w-[280px] sm:max-w-[320px] mx-auto bg-white dark:bg-parchment-900 rounded-xl border border-parchment-200 dark:border-parchment-800 relative overflow-hidden shadow-xs">
               <svg viewBox="0 0 300 300" className="w-full h-full">
                 {/* Arena Grid */}
                 <defs>
@@ -854,7 +854,7 @@ export const RosTeleopVisualizer: React.FC<RosTeleopVisualizerProps> = ({
                   onMouseUp={() => setDirection(0, 0)}
                   onTouchStart={() => setDirection(1.2, 0)}
                   onTouchEnd={() => setDirection(0, 0)}
-                  className="w-14 h-12 rounded-xl border border-parchment-300 dark:border-parchment-700 bg-white dark:bg-parchment-850 hover:bg-parchment-100 dark:hover:bg-parchment-700 text-ink-light dark:text-ink-dark flex items-center justify-center font-mono font-bold text-xs shadow-xs cursor-pointer active:scale-95 transition-all touch-manipulation"
+                  className="w-14 h-12 rounded-xl border border-parchment-300 dark:border-parchment-700 bg-white dark:bg-parchment-800 hover:bg-parchment-100 dark:hover:bg-parchment-700 text-ink-light dark:text-ink-dark flex items-center justify-center font-mono font-bold text-xs shadow-xs cursor-pointer active:scale-95 transition-all touch-manipulation"
                   title="Forward"
                 >
                   <ArrowUp className="w-4 h-4" />
@@ -866,7 +866,7 @@ export const RosTeleopVisualizer: React.FC<RosTeleopVisualizerProps> = ({
                     onMouseUp={() => setDirection(0, 0)}
                     onTouchStart={() => setDirection(0.4, -1.8)}
                     onTouchEnd={() => setDirection(0, 0)}
-                    className="w-14 h-12 rounded-xl border border-parchment-300 dark:border-parchment-700 bg-white dark:bg-parchment-850 hover:bg-parchment-100 dark:hover:bg-parchment-700 text-ink-light dark:text-ink-dark flex items-center justify-center font-mono font-bold text-xs shadow-xs cursor-pointer active:scale-95 transition-all touch-manipulation"
+                    className="w-14 h-12 rounded-xl border border-parchment-300 dark:border-parchment-700 bg-white dark:bg-parchment-800 hover:bg-parchment-100 dark:hover:bg-parchment-700 text-ink-light dark:text-ink-dark flex items-center justify-center font-mono font-bold text-xs shadow-xs cursor-pointer active:scale-95 transition-all touch-manipulation"
                     title="Turn Left"
                   >
                     <ArrowLeft className="w-4 h-4" />
@@ -885,7 +885,7 @@ export const RosTeleopVisualizer: React.FC<RosTeleopVisualizerProps> = ({
                     onMouseUp={() => setDirection(0, 0)}
                     onTouchStart={() => setDirection(0.4, 1.8)}
                     onTouchEnd={() => setDirection(0, 0)}
-                    className="w-14 h-12 rounded-xl border border-parchment-300 dark:border-parchment-700 bg-white dark:bg-parchment-850 hover:bg-parchment-100 dark:hover:bg-parchment-700 text-ink-light dark:text-ink-dark flex items-center justify-center font-mono font-bold text-xs shadow-xs cursor-pointer active:scale-95 transition-all touch-manipulation"
+                    className="w-14 h-12 rounded-xl border border-parchment-300 dark:border-parchment-700 bg-white dark:bg-parchment-800 hover:bg-parchment-100 dark:hover:bg-parchment-700 text-ink-light dark:text-ink-dark flex items-center justify-center font-mono font-bold text-xs shadow-xs cursor-pointer active:scale-95 transition-all touch-manipulation"
                     title="Turn Right"
                   >
                     <ArrowRight className="w-4 h-4" />
@@ -897,7 +897,7 @@ export const RosTeleopVisualizer: React.FC<RosTeleopVisualizerProps> = ({
                   onMouseUp={() => setDirection(0, 0)}
                   onTouchStart={() => setDirection(-1.0, 0)}
                   onTouchEnd={() => setDirection(0, 0)}
-                  className="w-14 h-12 rounded-xl border border-parchment-300 dark:border-parchment-700 bg-white dark:bg-parchment-850 hover:bg-parchment-100 dark:hover:bg-parchment-700 text-ink-light dark:text-ink-dark flex items-center justify-center font-mono font-bold text-xs shadow-xs cursor-pointer active:scale-95 transition-all touch-manipulation"
+                  className="w-14 h-12 rounded-xl border border-parchment-300 dark:border-parchment-700 bg-white dark:bg-parchment-800 hover:bg-parchment-100 dark:hover:bg-parchment-700 text-ink-light dark:text-ink-dark flex items-center justify-center font-mono font-bold text-xs shadow-xs cursor-pointer active:scale-95 transition-all touch-manipulation"
                   title="Reverse"
                 >
                   <ArrowDown className="w-4 h-4" />

@@ -536,7 +536,7 @@ export const UvmTestbenchVisualizer: React.FC<UvmTestbenchVisualizerProps> = ({
           </div>
 
           {/* Continuous SVG UVM Pipeline Diagram */}
-          <div className="w-full bg-slate-900/90 rounded-xl p-3 border border-slate-800 relative overflow-hidden select-none">
+          <div className="w-full bg-slate-900/90 rounded-xl p-3 border border-slate-800 relative select-none diagram-canvas-scroll">
             <svg viewBox="0 0 760 180" className="w-full h-auto drop-shadow-sm">
               <defs>
                 <marker
